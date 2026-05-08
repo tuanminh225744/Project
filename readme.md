@@ -16,3 +16,19 @@ requirements.txt ghi thông tin các package và phiên bản của chúng
 
 - xuất danh sách package: pip freeze > requirements.txt
 - cài đặt tất cả package trong requirements.txt: pip install -r requirements.txt
+
+khởi chạy chương trình:
+
+- uvicorn app.main:app --reload
+
+build image:
+
+- docker build -t <tên image> .
+
+docker compose cho phép build image, tạo continer, chạy container, kết nối nhiều service với nhau
+
+- lệnh chạy docker compose: docker compose up --build
+
+- lệnh tag image: docker tag <tên image> <user name>/<tên image>:v1
+
+- lệnh push image: docker push <user name>/<tên image>:v1
