@@ -5,23 +5,24 @@ from app.utils.validators import validate_no_space
 
 
 class UserBase(BaseModel):
-    name: str
+    username: str
     email: EmailStr
-    @field_validator("name")
+    @field_validator("username")
     @classmethod
     def check_username(cls, v):
         return validate_no_space(v)
 
-class UserCreate(UserBase):
+class UserCreateRequest(UserBase):
     pass
 
 
-class UserUpdate(BaseModel):
-    name: Optional[str] = None
+class UserUpdateRequest(BaseModel):
+    username: Optional[str] = None
     email: Optional[EmailStr] = None
 
-class User(UserBase):
+class UserResponse(UserBase):
     id: int
+    role: str
     created_at: datetime
     updated_at: Optional[datetime]
 
