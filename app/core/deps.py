@@ -10,8 +10,6 @@ load_dotenv()
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
-       
-        # Now decode with validation
         payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM", "HS256")])
         user_id = payload.get("sub")
         role = payload.get("role")
