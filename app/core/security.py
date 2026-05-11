@@ -1,8 +1,9 @@
-from jose import jwt
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from fastapi.security import HTTPBearer
+from fastapi import HTTPException
 import os
 
 load_dotenv()
@@ -66,3 +67,21 @@ def refresh_access_token(token: str) -> dict:
         "refresh_token": new_refresh_token,
         "token_type": "bearer"
     }
+
+def verify_refresh_token(token: str):
+    try:
+        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM", "HS256")])
+        user_id = payload.get("sub")
+        role = payload.get("role")
+        
+        if user_id is None:
+            raise HTTPException(401, "Invalid refresh token")
+
+        return {
+            "user_id": int(user_id),
+            "role": role
+        }
+
+    except (JWTError, ValueError) as e:
+        print(f"JWT/Parse Error: {e}")
+        raise HTTPException(401, "Invalid refresh token")

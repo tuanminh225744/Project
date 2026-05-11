@@ -1,40 +1,23 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
-from app.schemas.user import UserCreateRequest, UserUpdateRequest
+from app.schemas.user import UserUpdateRequest
 from typing import List, Optional
+from app.repositories.user_responsitory import UserRepository
 
 class UserService:
     def __init__(self, db: Session):
         self.db = db
-    
-    def create_user(self, user: UserCreateRequest) -> User:
-        db_user = User(username=user.username, email=user.email)
-        self.db.add(db_user)
-        self.db.commit()
-        self.db.refresh(db_user)
-        return db_user
+        self.user_repository = UserRepository(db)
     
     def get_user(self, user_id: int) -> Optional[User]:
-        return self.db.query(User).filter(User.id == user_id).first()
-    
+        return self.user_repository.get_user(user_id)
+
     def get_users(self, skip: int = 0, limit: int = 100) -> List[User]:
-        return self.db.query(User).offset(skip).limit(limit).all()
-    
+        return self.user_repository.get_users(skip, limit)
+
     def update_user(self, user_id: int, user_update: UserUpdateRequest) -> Optional[User]:
-        db_user = self.get_user(user_id)
-        if db_user:
-            update_data = user_update.model_dump(exclude_unset=True)
-            for field, value in update_data.items():
-                setattr(db_user, field, value)
-            self.db.commit()
-            self.db.refresh(db_user)
-        return db_user
-    
-    
+        return self.user_repository.update_user(user_id, user_update)
+
     def delete_user(self, user_id: int) -> bool:
-        db_user = self.get_user(user_id)
-        if db_user:
-            self.db.delete(db_user)
-            self.db.commit()
-            return True
-        return False
+        return self.user_repository.delete_user(user_id)
+    
