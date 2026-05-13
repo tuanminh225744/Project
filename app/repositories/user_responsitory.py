@@ -44,3 +44,6 @@ class UserRepository:
     def get_user_by_username(self, username: str) -> User | None:
         return self.db.query(User).filter(User.username == username).first()
     
+    def get_user_by_email(self, email: str) -> User | None:
+        return self.db.query(User).filter(User.email == email).first()
+    

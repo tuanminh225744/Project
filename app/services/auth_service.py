@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.repositories.user_responsitory import UserRepository
 from app.models.user import User
@@ -15,18 +16,21 @@ class AuthService:
         self.user_repository = UserRepository(db)
     
     def register_user(self, username: str, email: str, password: str) -> User:
-        existing_user = self.user_repository.get_user_by_username(username)
-        if existing_user:
+        existing_username = self.user_repository.get_user_by_username(username)
+        existing_email = self.user_repository.get_user_by_email(email)
+        if existing_username:
             raise ValueError("Username already registered")
-        
+        if existing_email:
+            raise ValueError("Email already registered")
+
         return self.user_repository.create_user(username, email, hash_password(password))
 
     def authenticate_user(self, username: str, password: str) -> User | None:
         user = self.user_repository.get_user_by_username(username)
         if not user:
-            return None
+            raise ValueError("User not found")
         if not verify_password(password, user.hashed_password):
-            return None
+            raise ValueError("Invalid username or password")
         return user
 
     def login_user(self, username: str, password: str) -> dict:
@@ -47,6 +51,10 @@ class AuthService:
         refresh_data = verify_refresh_token(refresh_token)
         user_id = refresh_data["user_id"]
         role = refresh_data["role"]
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+        if not role:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
 
         new_access_token = create_access_token(data={"sub": str(user_id), "role": role})
         new_refresh_token = create_refresh_token(data={"sub": str(user_id), "role": role})
