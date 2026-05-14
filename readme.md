@@ -32,3 +32,5 @@ docker compose cho phép build image, tạo continer, chạy container, kết n�
 - lệnh tag image: docker tag <tên image> <user name>/<tên image>:v1
 
 - lệnh push image: docker push <user name>/<tên image>:v1
+
+- lệnh chạy test: pytest -v

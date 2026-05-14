@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
 from datetime import datetime
 from typing import Optional
 from app.utils.validators import validate_no_space
@@ -26,5 +26,6 @@ class UserResponse(UserBase):
     created_at: datetime
     updated_at: Optional[datetime]
 
-    class Config:
-        from_attributes = True  
+    model_config = ConfigDict(
+        from_attributes=True
+    )  
