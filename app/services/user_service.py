@@ -16,8 +16,14 @@ class UserService:
         return self.user_repository.get_users(skip, limit)
 
     def update_user(self, user_id: int, user_update: UserUpdateRequest) -> Optional[User]:
+        user = self.user_repository.get_user(user_id)
+        if not user:
+            raise ValueError("User not found")
         return self.user_repository.update_user(user_id, user_update)
 
     def delete_user(self, user_id: int) -> bool:
+        user = self.user_repository.get_user(user_id)
+        if not user:
+            raise ValueError("User not found")
         return self.user_repository.delete_user(user_id)
     
