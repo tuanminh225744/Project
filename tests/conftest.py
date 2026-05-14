@@ -1,40 +1,53 @@
 from typing import Generator
-
+import os
 import pytest
-
 import pytest_asyncio
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-
+from sqlalchemy_utils import create_database, database_exists, drop_database
 from httpx import AsyncClient
 from httpx import ASGITransport
-
-from app.main import app
-from app.db.base import Base, get_db
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
 
+POSTGRES_URL_TEST = os.getenv("POSTGRES_URL_TEST")
+if not POSTGRES_URL_TEST:
+    raise RuntimeError("POSTGRES_URL_TEST is not configured in .env")
 
-engine = create_engine(
-    os.getenv("POSTGRES_URL_TEST")
-)
+os.environ["DATABASE_URL"] = POSTGRES_URL_TEST
+
+from app.db.base import Base, get_db
+from app.main import app
+
+# Tạo engine global
+test_engine = create_engine(POSTGRES_URL_TEST)
+
 
 TestingSessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
-    bind=engine,
+    bind=test_engine,
 )
 
-@pytest.fixture(autouse=True)
-def clear_tables():
 
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_db():
+
+    if not database_exists(POSTGRES_URL_TEST):
+        create_database(POSTGRES_URL_TEST)
+
+    Base.metadata.create_all(bind=test_engine)
 
     yield
+
+    Base.metadata.drop_all(bind=test_engine)
+
+    test_engine.dispose()
+
+    drop_database(POSTGRES_URL_TEST)
+
 
 def override_get_db() -> Generator:
     db = TestingSessionLocal()
