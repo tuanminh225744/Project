@@ -3,8 +3,17 @@ from app.db.base import engine, Base
 from app.api.routers.user_router import router as user_router
 from app.api.routers.auth_router import router as auth_router
 from app.api.routers.task_router import router as task_router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # React Vite
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup():

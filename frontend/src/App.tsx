@@ -1,11 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from "react";
+import reactLogo from "./assets/react.svg";
+import viteLogo from "./assets/vite.svg";
+import heroImg from "./assets/hero.png";
+import "./App.css";
+
+type User = {
+  id: number;
+  username: string;
+  email?: string;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+  const [message, setMessage] = useState("");
+
+  // Ví dụ về việc gọi API để lấy dữ liệu từ backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://localhost:9000/");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setMessage(data.message);
+        console.log("Fetched data:", data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+
+    // Ví dụ về map/filter/reduce
+    const users: User[] = [
+      { id: 1, username: "alice", email: "alice@example.com" },
+      { id: 2, username: "bob", email: "bob@example.com" },
+      { id: 3, username: "charlie", email: "charlie@example.com" },
+    ];
+
+    // Map: Dùng để transform dữ liệu
+    const usernames = users.map((user) => user.username);
+    console.log("Usernames:", usernames);
+
+    // Filter: Dùng để lọc dữ liệu
+    const usersWithEmail = users.filter((user) => user.email !== undefined);
+    console.log("Users with email:", usersWithEmail);
+
+    // Reduce: Dùng để tính toán tổng hoặc kết quả từ một mảng
+    const totalUsers = users.reduce((total) => total + 1, 0);
+    console.log("Total users:", totalUsers);
+  }, []);
 
   return (
     <>
@@ -28,6 +73,9 @@ function App() {
         >
           Count is {count}
         </button>
+        <div>
+          <p>{message}</p>
+        </div>
       </section>
 
       <div className="ticks"></div>
@@ -116,7 +164,7 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
