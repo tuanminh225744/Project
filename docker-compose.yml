@@ -8,6 +8,9 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     depends_on:
       - db
+    volumes:
+      - .:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   db:
     image: postgres:16
@@ -20,7 +23,32 @@ services:
     build: .
     depends_on:
       - db
+      - redis
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       POSTGRES_URL_TEST: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}_test
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - .:/app
     command: pytest
+
+  celery_worker:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - .:/app
+    command: celery -A app.celery_app worker --loglevel=info
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:

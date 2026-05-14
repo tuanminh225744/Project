@@ -17,12 +17,12 @@ router = APIRouter(
 #     return user_service.create_user(user)
 
 @router.get("/", response_model=list[UserResponse])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), admin=Depends(require_admin)):
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     user_service = UserService(db)
     return user_service.get_users(skip=skip, limit=limit)
 
 @router.get("/{user_id}", response_model=UserResponse)
-def read_user(user_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
+def read_user(user_id: int, db: Session = Depends(get_db)):
     user_service = UserService(db)
     db_user = user_service.get_user(user_id)
     if db_user is None:
@@ -31,7 +31,8 @@ def read_user(user_id: int, db: Session = Depends(get_db), admin=Depends(require
 
 @router.put("/{user_id}", response_model=UserResponse)
 def update_user(user_id: int, user: UserUpdateRequest, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
-    if current_user["user_id"] != user_id and current_user["role"] != "admin":
+    print(f"Current user: {current_user}")
+    if current_user["user_id"] != user_id:
         raise HTTPException(status_code=403, detail="Not allowed to update other users")
     
     user_service = UserService(db)

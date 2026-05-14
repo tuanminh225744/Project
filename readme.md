@@ -27,7 +27,7 @@ build image:
 
 docker compose cho phép build image, tạo continer, chạy container, kết nối nhiều service với nhau
 
-- lệnh chạy docker compose: docker compose up --build
+- lệnh chạy docker compose: docker compose up --build -d
 
 - lệnh tag image: docker tag <tên image> <user name>/<tên image>:v1
 
