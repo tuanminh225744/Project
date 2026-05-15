@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db.base import SessionLocal
 from app.services.user_service import UserService
 from app.schemas.user import UserResponse, UserCreateRequest, UserUpdateRequest
-from app.core.deps import get_current_user, require_admin
+from app.core.deps import get_current_user
 from app.db.base import get_db
 
 router = APIRouter(
@@ -42,7 +42,7 @@ def update_user(user_id: int, user: UserUpdateRequest, db: Session = Depends(get
     return db_user
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db), admin=Depends(require_admin)):
+def delete_user(user_id: int, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     user_service = UserService(db)
     success = user_service.delete_user(user_id)
     if not success:

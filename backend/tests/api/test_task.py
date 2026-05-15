@@ -3,7 +3,7 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_send_email_task(client: AsyncClient):
-    response = await client.post("/tasks/send-email", json={
+    response = await client.post("/email-tasks/send-email", json={
         "to_email": "test@example.com",
         "subject": "Test Email",
         "body": "This is a test email."
@@ -13,7 +13,7 @@ async def test_send_email_task(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_send_email_background_task(client: AsyncClient):
-    response = await client.post("/tasks/send-email-background", json={
+    response = await client.post("/email-tasks/send-email-background", json={
         "to_email": "test@example.com",
         "subject": "Test Email",
         "body": "This is a test email."

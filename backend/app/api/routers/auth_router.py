@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.base import get_db
 from app.services.auth_service import AuthService
 from app.schemas.auth import LoginRequest, RegisterRequest, LoginResponse, RegisterResponse, RefreshTokenRequest
+from app.schemas.user import UserCreateRequest
 from app.core.security import refresh_access_token
 
 router = APIRouter(
@@ -15,7 +16,12 @@ router = APIRouter(
 def register(request: RegisterRequest, db: Session = Depends(get_db)):
     try:
         auth_service = AuthService(db)
-        user = auth_service.register_user(request.username, request.email, request.password)
+        user_create = UserCreateRequest(
+            username=request.username,
+            email=request.email,
+            password=request.password
+        )
+        user = auth_service.register_user(user_create)
         return RegisterResponse(message="User registered successfully", user_id=user.id, username=user.username)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -29,6 +29,8 @@ docker compose cho phép build image, tạo continer, chạy container, kết n�
 
 - lệnh chạy docker compose: docker compose up --build -d
 
+- lệnh dừng tất cả docker container: docker compose down
+
 - lệnh tag image: docker tag <tên image> <user name>/<tên image>:v1
 
 - lệnh push image: docker push <user name>/<tên image>:v1

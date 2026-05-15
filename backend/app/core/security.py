@@ -54,13 +54,12 @@ def refresh_access_token(token: str) -> dict:
         raise ValueError("Invalid refresh token")
     
     user_id = payload.get("sub")
-    role = payload.get("role")
 
     if user_id is None:
         raise ValueError("Invalid refresh token")
 
-    new_access_token = create_access_token(data={"sub": user_id, "role": role})
-    new_refresh_token = create_refresh_token(data={"sub": user_id, "role": role})
+    new_access_token = create_access_token(data={"sub": user_id})
+    new_refresh_token = create_refresh_token(data={"sub": user_id})
     
     return {
         "access_token": new_access_token,
@@ -72,14 +71,12 @@ def verify_refresh_token(token: str):
     try:
         payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM", "HS256")])
         user_id = payload.get("sub")
-        role = payload.get("role")
         
         if user_id is None:
             raise HTTPException(401, "Invalid refresh token")
 
         return {
             "user_id": int(user_id),
-            "role": role
         }
 
     except (JWTError, ValueError) as e:

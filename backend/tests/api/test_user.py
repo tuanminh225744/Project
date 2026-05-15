@@ -72,5 +72,4 @@ async def test_delete_user(client: AsyncClient):
 
     # Then, delete the user
     response = await client.delete("/users/4", headers=headers)
-    # Admin is required to delete users, so this should return 403 Forbidden
-    assert response.status_code == 403
+    assert response.status_code == 200

@@ -1,7 +1,7 @@
 import json
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from app.models.user import User
+from app.models.users import User
 from app.schemas.user import UserResponse, UserUpdateRequest
 from app.repositories.user_responsitory import UserRepository
 from app.core.cache import redis_client
