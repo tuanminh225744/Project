@@ -43,13 +43,21 @@ export default function Login() {
           </Typography.Title>
         </div>
 
-        <Form<LoginFormValues> layout="vertical" onFinish={handleSubmit} requiredMark={false}>
+        <Form<LoginFormValues>
+          layout="vertical"
+          onFinish={handleSubmit}
+          requiredMark={false}
+        >
           <Form.Item
             label="Username"
             name="username"
             rules={[{ required: true, message: "Vui lòng nhập username." }]}
           >
-            <Input size="large" autoComplete="username" placeholder="Nhập username" />
+            <Input
+              size="large"
+              autoComplete="username"
+              placeholder="Nhập username"
+            />
           </Form.Item>
 
           <Form.Item
@@ -64,7 +72,9 @@ export default function Login() {
             />
           </Form.Item>
 
-          {error ? <Alert className="mb-4" type="error" message={error} showIcon /> : null}
+          {error ? (
+            <Alert className="mb-4" type="error" message={error} showIcon />
+          ) : null}
 
           <Button
             block
