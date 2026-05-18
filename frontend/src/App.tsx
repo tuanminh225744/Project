@@ -8,12 +8,16 @@ import { ProtectedRoute } from "./hooks/protected_router";
 const Project = lazy(() => import("./pages/project"));
 const ProjectDetail = lazy(() => import("./pages/project_detail"));
 const User = lazy(() => import("./pages/user"));
+const Login = lazy(() => import("./pages/login"));
+const Register = lazy(() => import("./pages/register"));
 
 function App() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Login />} />
         <Route
           path="/dashboard"
           element={
