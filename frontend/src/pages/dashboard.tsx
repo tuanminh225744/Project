@@ -1,9 +1,9 @@
-import React, { use, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "../contexts/auth_context";
 import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
-  const [count, setCount] = React.useState(0);
+  const [count] = React.useState(0);
   const { user, login } = useAuth();
   const navigate = useNavigate();
   // updete count when button is clicked
