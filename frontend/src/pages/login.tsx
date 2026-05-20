@@ -1,33 +1,31 @@
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, Button, Card, Form, Input, Typography } from "antd";
+import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { loginApi } from "../services/auth_service";
-
-type LoginFormValues = {
-  username: string;
-  password: string;
-};
+import { loginSchema, type LoginFormValues } from "../schemas/auth_schema";
+import { useAuthStore } from "../store/useAuthStore";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { error, isLoading, login, clearError } = useAuthStore();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = async (values: LoginFormValues) => {
-    setError("");
-    setIsSubmitting(true);
-
+  const onSubmit = async (values: LoginFormValues) => {
     try {
-      const response = await loginApi(values);
-
-      localStorage.setItem("accessToken", response.access_token);
-      localStorage.setItem("refreshToken", response.refresh_token);
-
+      await login(values);
       navigate("/dashboard", { replace: true });
     } catch {
-      setError("Username hoặc password không đúng.");
-    } finally {
-      setIsSubmitting(false);
+      // Error message is managed by the global auth store.
     }
   };
 
@@ -43,32 +41,47 @@ export default function Login() {
           </Typography.Title>
         </div>
 
-        <Form<LoginFormValues>
+        <Form
           layout="vertical"
-          onFinish={handleSubmit}
+          onSubmitCapture={handleSubmit(onSubmit)}
+          onChange={clearError}
           requiredMark={false}
         >
           <Form.Item
             label="Username"
-            name="username"
-            rules={[{ required: true, message: "Vui lòng nhập username." }]}
+            validateStatus={errors.username ? "error" : undefined}
+            help={errors.username?.message}
           >
-            <Input
-              size="large"
-              autoComplete="username"
-              placeholder="Nhập username"
+            <Controller
+              name="username"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  size="large"
+                  autoComplete="username"
+                  placeholder="Nhập username"
+                />
+              )}
             />
           </Form.Item>
 
           <Form.Item
             label="Password"
-            name="password"
-            rules={[{ required: true, message: "Vui lòng nhập password." }]}
+            validateStatus={errors.password ? "error" : undefined}
+            help={errors.password?.message}
           >
-            <Input.Password
-              size="large"
-              autoComplete="current-password"
-              placeholder="Nhập password"
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  size="large"
+                  autoComplete="current-password"
+                  placeholder="Nhập password"
+                />
+              )}
             />
           </Form.Item>
 
@@ -81,7 +94,7 @@ export default function Login() {
             size="large"
             type="primary"
             htmlType="submit"
-            loading={isSubmitting}
+            loading={isLoading}
           >
             Đăng nhập
           </Button>

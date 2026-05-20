@@ -1,26 +1,33 @@
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, Button, Card, Form, Input, Typography } from "antd";
+import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { registerApi } from "../services/auth_service";
-
-type RegisterFormValues = {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-};
+import {
+  registerSchema,
+  type RegisterFormValues,
+} from "../schemas/auth_schema";
+import { useAuthStore } from "../store/useAuthStore";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { error, isLoading, register, clearError } = useAuthStore();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-  const handleSubmit = async (values: RegisterFormValues) => {
-    setError("");
-    setIsSubmitting(true);
-
+  const onSubmit = async (values: RegisterFormValues) => {
     try {
-      await registerApi({
+      await register({
         username: values.username,
         email: values.email,
         password: values.password,
@@ -28,9 +35,7 @@ export default function Register() {
 
       navigate("/login", { replace: true });
     } catch {
-      setError("Không thể đăng ký tài khoản. Vui lòng kiểm tra lại thông tin.");
-    } finally {
-      setIsSubmitting(false);
+      // Error message is managed by the global auth store.
     }
   };
 
@@ -46,66 +51,93 @@ export default function Register() {
           </Typography.Title>
         </div>
 
-        <Form<RegisterFormValues> layout="vertical" onFinish={handleSubmit} requiredMark={false}>
+        <Form
+          layout="vertical"
+          onSubmitCapture={handleSubmit(onSubmit)}
+          onChange={clearError}
+          requiredMark={false}
+        >
           <Form.Item
             label="Username"
-            name="username"
-            rules={[{ required: true, message: "Vui lòng nhập username." }]}
+            validateStatus={errors.username ? "error" : undefined}
+            help={errors.username?.message}
           >
-            <Input size="large" autoComplete="username" placeholder="Nhập username" />
+            <Controller
+              name="username"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  size="large"
+                  autoComplete="username"
+                  placeholder="Nhập username"
+                />
+              )}
+            />
           </Form.Item>
 
           <Form.Item
             label="Email"
-            name="email"
-            rules={[
-              { required: true, message: "Vui lòng nhập email." },
-              { type: "email", message: "Email không hợp lệ." },
-            ]}
+            validateStatus={errors.email ? "error" : undefined}
+            help={errors.email?.message}
           >
-            <Input size="large" autoComplete="email" placeholder="Nhập email" />
+            <Controller
+              name="email"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  size="large"
+                  autoComplete="email"
+                  placeholder="Nhập email"
+                />
+              )}
+            />
           </Form.Item>
 
           <Form.Item
             label="Password"
-            name="password"
-            rules={[
-              { required: true, message: "Vui lòng nhập password." },
-              { min: 6, message: "Password phải có ít nhất 6 ký tự." },
-            ]}
+            validateStatus={errors.password ? "error" : undefined}
+            help={errors.password?.message}
             hasFeedback
           >
-            <Input.Password size="large" autoComplete="new-password" placeholder="Nhập password" />
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  size="large"
+                  autoComplete="new-password"
+                  placeholder="Nhập password"
+                />
+              )}
+            />
           </Form.Item>
 
           <Form.Item
             label="Nhập lại password"
-            name="confirmPassword"
-            dependencies={["password"]}
+            validateStatus={errors.confirmPassword ? "error" : undefined}
+            help={errors.confirmPassword?.message}
             hasFeedback
-            rules={[
-              { required: true, message: "Vui lòng nhập lại password." },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue("password") === value) {
-                    return Promise.resolve();
-                  }
-
-                  return Promise.reject(new Error("Password nhập lại không khớp."));
-                },
-              }),
-            ]}
           >
-            <Input.Password
-              size="large"
-              autoComplete="new-password"
-              placeholder="Nhập lại password"
+            <Controller
+              name="confirmPassword"
+              control={control}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  size="large"
+                  autoComplete="new-password"
+                  placeholder="Nhập lại password"
+                />
+              )}
             />
           </Form.Item>
 
           {error ? <Alert className="mb-4" type="error" message={error} showIcon /> : null}
 
-          <Button block size="large" type="primary" htmlType="submit" loading={isSubmitting}>
+          <Button block size="large" type="primary" htmlType="submit" loading={isLoading}>
             Đăng ký
           </Button>
         </Form>
