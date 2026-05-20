@@ -1,18 +1,17 @@
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, Button, Card, Form, Input, Typography } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { loginSchema, type LoginFormValues } from "../schemas/auth_schema";
-import { loginApi } from "../services/auth_service";
+import { useAuthStore } from "../store/useAuthStore";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
+  const { error, isLoading, login, clearError } = useAuthStore();
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -22,17 +21,11 @@ export default function Login() {
   });
 
   const onSubmit = async (values: LoginFormValues) => {
-    setError("");
-
     try {
-      const response = await loginApi(values);
-
-      localStorage.setItem("accessToken", response.access_token);
-      localStorage.setItem("refreshToken", response.refresh_token);
-
+      await login(values);
       navigate("/dashboard", { replace: true });
     } catch {
-      setError("Username hoặc password không đúng.");
+      // Error message is managed by the global auth store.
     }
   };
 
@@ -51,6 +44,7 @@ export default function Login() {
         <Form
           layout="vertical"
           onSubmitCapture={handleSubmit(onSubmit)}
+          onChange={clearError}
           requiredMark={false}
         >
           <Form.Item
@@ -100,7 +94,7 @@ export default function Login() {
             size="large"
             type="primary"
             htmlType="submit"
-            loading={isSubmitting}
+            loading={isLoading}
           >
             Đăng nhập
           </Button>

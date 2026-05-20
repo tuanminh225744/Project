@@ -1,5 +1,17 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import {
+  loginApi,
+  registerApi,
+  type LoginPayload,
+  type RegisterPayload,
+} from "../services/auth_service";
+
+const getStoredAccessToken = () =>
+  typeof window === "undefined" ? null : localStorage.getItem("accessToken");
+
+const getStoredRefreshToken = () =>
+  typeof window === "undefined" ? null : localStorage.getItem("refreshToken");
 
 export interface User {
   userId: number | string;
@@ -12,10 +24,15 @@ export interface User {
 interface AuthState {
   user: User | null;
   access_token: string | null;
+  refresh_token: string | null;
   isAuthentication: boolean;
+  isLoading: boolean;
+  error: string | null;
 
-  login: (user: User, token: string) => void;
+  login: (payload: LoginPayload) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
+  clearError: () => void;
   updateProfile: (profileData: Partial<User>) => void;
 }
 
@@ -24,22 +41,66 @@ export const useAuthStore = create<AuthState>()(
     persist(
       (set) => ({
         user: null,
-        access_token: null,
-        isAuthentication: false,
+        access_token: getStoredAccessToken(),
+        refresh_token: getStoredRefreshToken(),
+        isAuthentication: Boolean(getStoredAccessToken()),
+        isLoading: false,
+        error: null,
 
-        login: (user, token) =>
-          set({
-            user: user,
-            access_token: token,
-            isAuthentication: true,
-          }),
+        login: async (payload) => {
+          set({ isLoading: true, error: null });
 
-        logout: () =>
+          try {
+            const response = await loginApi(payload);
+
+            localStorage.setItem("accessToken", response.access_token);
+            localStorage.setItem("refreshToken", response.refresh_token);
+
+            set({
+              access_token: response.access_token,
+              refresh_token: response.refresh_token,
+              isAuthentication: true,
+              isLoading: false,
+              error: null,
+            });
+          } catch (error) {
+            set({
+              isLoading: false,
+              error: "Username hoặc password không đúng.",
+            });
+            throw error;
+          }
+        },
+
+        register: async (payload) => {
+          set({ isLoading: true, error: null });
+
+          try {
+            await registerApi(payload);
+            set({ isLoading: false, error: null });
+          } catch (error) {
+            set({
+              isLoading: false,
+              error: "Không thể đăng ký tài khoản. Vui lòng kiểm tra lại thông tin.",
+            });
+            throw error;
+          }
+        },
+
+        logout: () => {
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+
           set({
             user: null,
             access_token: null,
+            refresh_token: null,
             isAuthentication: false,
-          }),
+            error: null,
+          });
+        },
+
+        clearError: () => set({ error: null }),
 
         updateProfile: (profileData) =>
           set((state) => ({
@@ -48,6 +109,12 @@ export const useAuthStore = create<AuthState>()(
       }),
       {
         name: "auth-storage",
+        partialize: (state) => ({
+          user: state.user,
+          access_token: state.access_token,
+          refresh_token: state.refresh_token,
+          isAuthentication: state.isAuthentication,
+        }),
       },
     ),
     { name: "AuthStore" },

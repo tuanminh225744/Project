@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, Button, Card, Form, Input, Typography } from "antd";
 import { Controller, useForm } from "react-hook-form";
@@ -7,15 +6,15 @@ import {
   registerSchema,
   type RegisterFormValues,
 } from "../schemas/auth_schema";
-import { registerApi } from "../services/auth_service";
+import { useAuthStore } from "../store/useAuthStore";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
+  const { error, isLoading, register, clearError } = useAuthStore();
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -27,10 +26,8 @@ export default function Register() {
   });
 
   const onSubmit = async (values: RegisterFormValues) => {
-    setError("");
-
     try {
-      await registerApi({
+      await register({
         username: values.username,
         email: values.email,
         password: values.password,
@@ -38,7 +35,7 @@ export default function Register() {
 
       navigate("/login", { replace: true });
     } catch {
-      setError("Không thể đăng ký tài khoản. Vui lòng kiểm tra lại thông tin.");
+      // Error message is managed by the global auth store.
     }
   };
 
@@ -57,6 +54,7 @@ export default function Register() {
         <Form
           layout="vertical"
           onSubmitCapture={handleSubmit(onSubmit)}
+          onChange={clearError}
           requiredMark={false}
         >
           <Form.Item
@@ -139,7 +137,7 @@ export default function Register() {
 
           {error ? <Alert className="mb-4" type="error" message={error} showIcon /> : null}
 
-          <Button block size="large" type="primary" htmlType="submit" loading={isSubmitting}>
+          <Button block size="large" type="primary" htmlType="submit" loading={isLoading}>
             Đăng ký
           </Button>
         </Form>
