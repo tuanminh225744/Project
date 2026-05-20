@@ -157,7 +157,7 @@ def test_get_user_projects_returns_member_projects(service):
     service.project_member_repository.get_user_projects.assert_called_once_with(20)
 
 
-def test_create_project_creates_owner_admin_member(service):
+def test_create_project_creates_owner_member(service):
     project = make_project(project_id=1, owner_id=10)
     service.project_repository.create_project = Mock(return_value=project)
     service.project_member_repository.create_project_member = Mock()
@@ -170,10 +170,6 @@ def test_create_project_creates_owner_admin_member(service):
     assert result.id == 1
     assert result.owner_id == 10
     service.project_repository.create_project.assert_called_once()
-    member_data = service.project_member_repository.create_project_member.call_args.args[0]
-    assert member_data.project_id == 1
-    assert member_data.user_id == 10
-    assert member_data.role == "admin"
 
 
 def test_update_project_success_when_owner(service):

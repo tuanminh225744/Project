@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, BigInteger, String, DateTime, ForeignKey, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -7,6 +7,10 @@ class ProjectMember(Base):
     __tablename__ = "project_members"
     __table_args__ = (
         UniqueConstraint("project_id", "user_id", name="uq_project_user"),
+        CheckConstraint(
+            "role IN ('member', 'admin')", 
+            name="valid_role_check"
+        ),
     )
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)

@@ -1,5 +1,6 @@
 import json
 from typing import List, Optional
+from datetime import date
 from sqlalchemy.orm import Session
 from app.models.projects import Project
 from app.schemas.project import ProjectResponse, ProjectCreateRequest, ProjectUpdateRequest
@@ -71,18 +72,29 @@ class ProjectService:
 
         return [ProjectResponse.model_validate(project) for project in projects]
 
+    def get_projects_by_filters(
+        self,
+        user_id: int,
+        status: Optional[str] = None,
+        priority: Optional[str] = None,
+        due_date: Optional[date] = None,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[ProjectResponse]:
+        projects = self.project_repository.get_accessible_projects_by_filters(
+            user_id=user_id,
+            status=status,
+            priority=priority,
+            due_date=due_date,
+            skip=skip,
+            limit=limit
+        )
+        return [ProjectResponse.model_validate(project) for project in projects]
+
     def create_project(self, project_data: ProjectCreateRequest, owner_id: int) -> ProjectResponse:
         project = self.project_repository.create_project(project_data, owner_id)
-
-        # Add owner as member with admin role
-        from app.schemas.project_member import ProjectMemberCreateRequest
-        member_data = ProjectMemberCreateRequest(
-            project_id=project.id,
-            user_id=owner_id,
-            role="admin"
-        )
-        self.project_member_repository.create_project_member(member_data)
-
+        if project and project.id:
+            self._invalidate_project_cache(project.id)
         return ProjectResponse.model_validate(project)
 
     def update_project(self, project_id: int, project_update: ProjectUpdateRequest, user_id: int) -> Optional[ProjectResponse]:
@@ -107,14 +119,12 @@ class ProjectService:
         return success
 
     def _can_access_project(self, project_id: int, user_id: int) -> bool:
-        """Check if user can access the project (owner or member)"""
         project = self.project_repository.get_project(project_id)
         if project and project.owner_id == user_id:
             return True
         return self.project_member_repository.is_user_in_project(project_id, user_id)
 
     def _can_modify_project(self, project_id: int, user_id: int) -> bool:
-        """Check if user can modify the project (owner or admin member)"""
         project = self.project_repository.get_project(project_id)
         if project and project.owner_id == user_id:
             return True
