@@ -52,9 +52,16 @@ axiosInstance.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
+    const refreshToken = getLocalRefreshToken();
 
     // Nếu không có config hoặc không phải lỗi 401, bỏ qua
     if (!error.response || error.response.status !== 401) {
+      return Promise.reject(error);
+    }
+
+    // Nếu request ban đầu không có token hoặc không có refresh token,
+    // giữ nguyên lỗi 401 từ backend thay vì gọi refresh rồi làm nhiễu status.
+    if (!getLocalAccessToken() || !refreshToken) {
       return Promise.reject(error);
     }
 
@@ -69,8 +76,6 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = getLocalRefreshToken();
-
         // Gọi API refresh token (Sử dụng một axios instance gốc/mới để tránh bị dính interceptor cũ)
         const res = await axios.post(`${apiUrl}/auth/refresh`, {
           refresh_token: refreshToken,
