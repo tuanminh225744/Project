@@ -112,7 +112,7 @@ class TaskService:
         if not self._can_access_project(task.project_id, user_id):
             raise ValueError("Access denied")
 
-        # Check if user can modify the task (creator or assignee or project admin)
+        # Check if user can modify the task
         if not self._can_modify_task(task, user_id):
             raise ValueError("Permission denied")
 
@@ -130,8 +130,8 @@ class TaskService:
         if not self._can_access_project(task.project_id, user_id):
             raise ValueError("Access denied")
 
-        # Only creator or project admin can delete
-        if task.created_by != user_id and not self._is_project_admin(task.project_id, user_id):
+        # Only creator or project owner can delete
+        if task.created_by != user_id and not self._is_project_owner(task.project_id, user_id):
             raise ValueError("Permission denied")
 
         success = self.task_repository.delete_task(task_id)
@@ -156,17 +156,16 @@ class TaskService:
         # Assignee can modify
         if task.assignee_id == user_id:
             return True
-        # Project admin can modify
-        return self._is_project_admin(task.project_id, user_id)
+        # Project owner can modify
+        return self._is_project_owner(task.project_id, user_id)
 
-    def _is_project_admin(self, project_id: int, user_id: int) -> bool:
-        """Check if user is project admin"""
+    def _is_project_owner(self, project_id: int, user_id: int) -> bool:
+        """Check if user is project owner"""
         from app.repositories.project_responsitory import ProjectRepository
         project_repo = ProjectRepository(self.db)
         project = project_repo.get_project(project_id)
         if project and project.owner_id == user_id:
             return True
 
-        members = self.project_member_repository.get_project_members(project_id)
-        user_member = next((m for m in members if m.user_id == user_id), None)
-        return user_member and user_member.role == "admin"
+        user_member = self.project_member_repository.get_project_member_by_user(project_id, user_id)
+        return bool(user_member and user_member.role == "owner")

@@ -10,11 +10,14 @@ from app.schemas.project import ProjectCreateRequest, ProjectUpdateRequest
 from app.services.project_service import ProjectService
 
 
-def make_project(project_id=1, owner_id=10):
+def make_project(project_id=1, owner_id=10, status="todo", priority="medium"):
     return Project(
         id=project_id,
         name="Test Project",
         description="Test description",
+        status=status,
+        priority=priority,
+        due_date=None,
         owner_id=owner_id,
         created_at=datetime.now(),
         updated_at=datetime.now(),
@@ -43,6 +46,9 @@ def test_get_project_from_cache(service):
         "id": 1,
         "name": "Test Project",
         "description": "Test description",
+        "status": "todo",
+        "priority": "medium",
+        "due_date": None,
         "owner_id": 10,
         "created_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat(),
@@ -107,6 +113,9 @@ def test_get_projects_by_owner_from_cache(service):
             "id": 1,
             "name": "Test Project",
             "description": "Test description",
+            "status": "todo",
+            "priority": "medium",
+            "due_date": None,
             "owner_id": 10,
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat(),
@@ -188,41 +197,6 @@ def test_update_project_success_when_owner(service):
         assert result.name == "Updated Project"
         service.project_repository.update_project.assert_called_once()
         invalidate_mock.assert_called_once_with(1)
-
-
-def test_update_project_success_when_admin_member(service):
-    updated_project = make_project(owner_id=10)
-    updated_project.name = "Updated Project"
-    service.project_repository.get_project = Mock(return_value=make_project(owner_id=10))
-    service.project_member_repository.get_project_members = Mock(
-        return_value=[make_project_member(project_id=1, user_id=20, role="admin")]
-    )
-    service.project_repository.update_project = Mock(return_value=updated_project)
-
-    with patch.object(service, "_invalidate_project_cache") as invalidate_mock:
-        result = service.update_project(
-            1,
-            ProjectUpdateRequest(name="Updated Project"),
-            user_id=20,
-        )
-
-        assert result.name == "Updated Project"
-        service.project_member_repository.get_project_members.assert_called_once_with(1)
-        invalidate_mock.assert_called_once_with(1)
-
-
-def test_update_project_denies_non_admin_member(service):
-    service.project_repository.get_project = Mock(return_value=make_project(owner_id=10))
-    service.project_member_repository.get_project_members = Mock(
-        return_value=[make_project_member(project_id=1, user_id=20, role="member")]
-    )
-    service.project_repository.update_project = Mock()
-
-    with pytest.raises(ValueError, match="Permission denied"):
-        service.update_project(1, ProjectUpdateRequest(name="Updated Project"), user_id=20)
-
-    service.project_repository.update_project.assert_not_called()
-
 
 def test_delete_project_success_when_owner(service):
     service.project_repository.get_project = Mock(return_value=make_project(owner_id=10))

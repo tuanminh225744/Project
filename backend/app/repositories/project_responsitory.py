@@ -61,6 +61,14 @@ class ProjectRepository:
             owner_id=owner_id
         )
         self.db.add(project)
+        self.db.flush()
+
+        owner_member = ProjectMember(
+            project_id=project.id,
+            user_id=owner_id,
+            role="owner"
+        )
+        self.db.add(owner_member)
         self.db.commit()
         self.db.refresh(project)
         return project

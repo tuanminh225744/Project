@@ -21,7 +21,7 @@ class ProjectMemberService:
         return [ProjectMemberResponse.model_validate(member) for member in members]
 
     def add_member_to_project(self, member_data: ProjectMemberCreateRequest, requester_id: int) -> ProjectMemberResponse:
-        # Check if requester can add members (owner or admin)
+        # Check if requester can add members
         if not self._can_modify_members(member_data.project_id, requester_id):
             raise ValueError("Permission denied")
 
@@ -76,6 +76,5 @@ class ProjectMemberService:
         if project and project.owner_id == user_id:
             return True
 
-        members = self.project_member_repository.get_project_members(project_id)
-        user_member = next((m for m in members if m.user_id == user_id), None)
-        return user_member and user_member.role == "admin"
+        user_member = self.project_member_repository.get_project_member_by_user(project_id, user_id)
+        return bool(user_member and user_member.role == "owner")

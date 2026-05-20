@@ -8,7 +8,7 @@ class ProjectMember(Base):
     __table_args__ = (
         UniqueConstraint("project_id", "user_id", name="uq_project_user"),
         CheckConstraint(
-            "role IN ('member', 'admin')", 
+            "role IN ('member', 'owner')",
             name="valid_role_check"
         ),
     )
