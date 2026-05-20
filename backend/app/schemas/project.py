@@ -6,6 +6,9 @@ from typing import Optional
 class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
+    status: str = "todo"
+    priority: str = "medium"
+    due_date: Optional[datetime] = None
 
 
 class ProjectCreateRequest(ProjectBase):
@@ -15,6 +18,9 @@ class ProjectCreateRequest(ProjectBase):
 class ProjectUpdateRequest(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    due_date: Optional[datetime] = None
 
 
 class ProjectResponse(ProjectBase):

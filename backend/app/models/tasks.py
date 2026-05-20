@@ -1,10 +1,20 @@
-from sqlalchemy import Column, BigInteger, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, BigInteger, String, Text, DateTime, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
 
 class Task(Base):
     __tablename__ = "tasks"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('todo', 'inprogress', 'done')", 
+            name="valid_status_check"
+        ),
+        CheckConstraint(
+            "priority IN ('low', 'medium', 'done')", 
+            name="valid_priority_check"
+        ),
+    )
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     project_id = Column(BigInteger, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)

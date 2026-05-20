@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from datetime import date
+from typing import List, Optional
 from app.db.base import get_db
 from app.services.project_service import ProjectService
 from app.schemas.project import ProjectResponse, ProjectCreateRequest, ProjectUpdateRequest
@@ -45,6 +46,29 @@ def read_owned_projects(
 ):
     project_service = ProjectService(db)
     return project_service.get_projects_by_owner(current_user["user_id"], skip, limit)
+
+@router.get("/search", response_model=List[ProjectResponse])
+def search_projects(
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    due_date: Optional[date] = None,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    project_service = ProjectService(db)
+    try:
+        return project_service.get_projects_by_filters(
+            user_id=current_user["user_id"],
+            status=status,
+            priority=priority,
+            due_date=due_date,
+            skip=skip,
+            limit=limit
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=403, detail=str(e))
 
 @router.get("/{project_id}", response_model=ProjectResponse)
 def read_project(
