@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 from app.db.base import get_db
 from app.services.task_service import TaskService
 from app.schemas.task_schema import TaskResponse, TaskCreateRequest, TaskUpdateRequest
@@ -59,6 +60,28 @@ def read_project_tasks(
         return task_service.get_tasks_by_project(project_id, current_user["user_id"], skip, limit)
     except ValueError as e:
         raise HTTPException(status_code=403, detail=str(e))
+
+@router.get("/filter", response_model=List[TaskResponse])
+def filter_tasks(
+    status: Optional[str] = None,
+    assignee_id: Optional[int] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    task_service = TaskService(db)
+    return task_service.get_tasks_by_filters(
+        user_id=current_user["user_id"],
+        status=status,
+        assignee_id=assignee_id,
+        start_date=start_date,
+        end_date=end_date,
+        skip=skip,
+        limit=limit
+    )
 
 @router.get("/{task_id}", response_model=TaskResponse)
 def read_task(

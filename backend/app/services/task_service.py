@@ -1,5 +1,6 @@
 import json
 from typing import List, Optional
+from datetime import datetime
 from sqlalchemy.orm import Session
 from app.models.tasks import Task
 from app.schemas.task_schema import TaskResponse, TaskCreateRequest, TaskUpdateRequest
@@ -91,6 +92,27 @@ class TaskService:
                 accessible_tasks.append(task)
 
         return [TaskResponse.model_validate(task) for task in accessible_tasks[skip:skip + limit]]
+
+    def get_tasks_by_filters(
+        self,
+        user_id: int,
+        status: Optional[str] = None,
+        assignee_id: Optional[int] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[TaskResponse]:
+        tasks = self.task_repository.get_accessible_tasks_by_filters(
+            user_id=user_id,
+            status=status,
+            assignee_id=assignee_id,
+            start_date=start_date,
+            end_date=end_date,
+            skip=skip,
+            limit=limit
+        )
+        return [TaskResponse.model_validate(task) for task in tasks]
 
     def create_task(self, task_data: TaskCreateRequest, creator_id: int) -> TaskResponse:
         # Check if user can access the project
