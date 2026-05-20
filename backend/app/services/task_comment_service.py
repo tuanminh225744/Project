@@ -67,11 +67,11 @@ class TaskCommentService:
         if not task or not self._can_access_task(task, user_id):
             raise ValueError("Access denied")
 
-        # Comment author or task creator or project admin can delete
+        # Comment author or task creator or project owner can delete
         can_delete = (
             comment.user_id == user_id or  # Author
             task.created_by == user_id or  # Task creator
-            self._is_project_admin(task.project_id, user_id)  # Project admin
+            self._is_project_owner(task.project_id, user_id)  # Project owner
         )
 
         if not can_delete:
@@ -92,8 +92,8 @@ class TaskCommentService:
             return True
         return member_repo.is_user_in_project(task.project_id, user_id)
 
-    def _is_project_admin(self, project_id: int, user_id: int) -> bool:
-        """Check if user is project admin"""
+    def _is_project_owner(self, project_id: int, user_id: int) -> bool:
+        """Check if user is project owner"""
         from app.repositories.project_responsitory import ProjectRepository
         from app.repositories.project_member_responsitory import ProjectMemberRepository
 
@@ -104,6 +104,5 @@ class TaskCommentService:
         if project and project.owner_id == user_id:
             return True
 
-        members = member_repo.get_project_members(project_id)
-        user_member = next((m for m in members if m.user_id == user_id), None)
-        return user_member and user_member.role == "admin"
+        user_member = member_repo.get_project_member_by_user(project_id, user_id)
+        return bool(user_member and user_member.role == "owner")

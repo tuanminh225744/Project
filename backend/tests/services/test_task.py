@@ -279,14 +279,14 @@ def test_update_task_success_when_assignee(service):
     invalidate_mock.assert_called_once_with(1)
 
 
-def test_update_task_success_when_project_admin(service):
+def test_update_task_success_when_project_owner(service):
     updated_task = make_task(created_by=10, assignee_id=20)
     updated_task.priority = "high"
     service.task_repository.get_task = Mock(return_value=make_task(created_by=10, assignee_id=20))
     service.task_repository.update_task = Mock(return_value=updated_task)
 
     with patch.object(service, "_can_access_project", return_value=True):
-        with patch.object(service, "_is_project_admin", return_value=True):
+        with patch.object(service, "_is_project_owner", return_value=True):
             with patch.object(service, "_invalidate_task_cache") as invalidate_mock:
                 result = service.update_task(
                     1,
@@ -321,7 +321,7 @@ def test_update_task_denies_user_without_modify_permission(service):
     service.task_repository.update_task = Mock()
 
     with patch.object(service, "_can_access_project", return_value=True):
-        with patch.object(service, "_is_project_admin", return_value=False):
+        with patch.object(service, "_is_project_owner", return_value=False):
             with pytest.raises(ValueError, match="Permission denied"):
                 service.update_task(1, TaskUpdateRequest(title="Updated Task"), user_id=30)
 
@@ -341,12 +341,12 @@ def test_delete_task_success_when_creator(service):
     invalidate_mock.assert_called_once_with(1)
 
 
-def test_delete_task_success_when_project_admin(service):
+def test_delete_task_success_when_project_owner(service):
     service.task_repository.get_task = Mock(return_value=make_task(created_by=10))
     service.task_repository.delete_task = Mock(return_value=True)
 
     with patch.object(service, "_can_access_project", return_value=True):
-        with patch.object(service, "_is_project_admin", return_value=True):
+        with patch.object(service, "_is_project_owner", return_value=True):
             with patch.object(service, "_invalidate_task_cache") as invalidate_mock:
                 result = service.delete_task(task_id=1, user_id=30)
 
@@ -378,7 +378,7 @@ def test_delete_task_denies_user_without_permission(service):
     service.task_repository.delete_task = Mock()
 
     with patch.object(service, "_can_access_project", return_value=True):
-        with patch.object(service, "_is_project_admin", return_value=False):
+        with patch.object(service, "_is_project_owner", return_value=False):
             with pytest.raises(ValueError, match="Permission denied"):
                 service.delete_task(task_id=1, user_id=30)
 
@@ -409,27 +409,27 @@ def test_can_access_project_checks_membership_for_non_owner(service):
     service.project_member_repository.is_user_in_project.assert_called_once_with(1, 20)
 
 
-def test_is_project_admin_returns_true_for_owner(service):
-    service.project_member_repository.get_project_members = Mock()
+def test_is_project_owner_returns_true_for_project_owner(service):
+    service.project_member_repository.get_project_member_by_user = Mock()
 
     with patch("app.repositories.project_responsitory.ProjectRepository") as project_repository_mock:
         project_repository_mock.return_value.get_project.return_value = make_project(owner_id=10)
 
-        result = service._is_project_admin(project_id=1, user_id=10)
+        result = service._is_project_owner(project_id=1, user_id=10)
 
     assert result is True
-    service.project_member_repository.get_project_members.assert_not_called()
+    service.project_member_repository.get_project_member_by_user.assert_not_called()
 
 
-def test_is_project_admin_returns_true_for_admin_member(service):
-    service.project_member_repository.get_project_members = Mock(
-        return_value=[make_project_member(project_id=1, user_id=20, role="admin")]
+def test_is_project_owner_returns_true_for_owner_member(service):
+    service.project_member_repository.get_project_member_by_user = Mock(
+        return_value=make_project_member(project_id=1, user_id=20, role="owner")
     )
 
     with patch("app.repositories.project_responsitory.ProjectRepository") as project_repository_mock:
         project_repository_mock.return_value.get_project.return_value = make_project(owner_id=10)
 
-        result = service._is_project_admin(project_id=1, user_id=20)
+        result = service._is_project_owner(project_id=1, user_id=20)
 
     assert result is True
-    service.project_member_repository.get_project_members.assert_called_once_with(1)
+    service.project_member_repository.get_project_member_by_user.assert_called_once_with(1, 20)

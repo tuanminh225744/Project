@@ -98,7 +98,7 @@ class ProjectService:
         return ProjectResponse.model_validate(project)
 
     def update_project(self, project_id: int, project_update: ProjectUpdateRequest, user_id: int) -> Optional[ProjectResponse]:
-        # Check if user can update project (owner or admin)
+        # Check if user can update project
         if not self._can_modify_project(project_id, user_id):
             raise ValueError("Permission denied")
 
@@ -129,6 +129,5 @@ class ProjectService:
         if project and project.owner_id == user_id:
             return True
 
-        member = self.project_member_repository.get_project_members(project_id)
-        user_member = next((m for m in member if m.user_id == user_id), None)
-        return user_member and user_member.role == "admin"
+        user_member = self.project_member_repository.get_project_member_by_user(project_id, user_id)
+        return bool(user_member and user_member.role == "owner")

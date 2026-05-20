@@ -1,12 +1,12 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 
 class ProjectMemberBase(BaseModel):
     project_id: int
     user_id: int
-    role: str = "member"
+    role: Literal["member", "owner"] = "member"
 
 
 class ProjectMemberCreateRequest(ProjectMemberBase):
@@ -14,7 +14,7 @@ class ProjectMemberCreateRequest(ProjectMemberBase):
 
 
 class ProjectMemberUpdateRequest(BaseModel):
-    role: Optional[str] = None
+    role: Optional[Literal["member", "owner"]] = None
 
 
 class ProjectMemberResponse(ProjectMemberBase):

@@ -14,14 +14,17 @@ class ProjectMemberRepository:
     def get_project_members(self, project_id: int) -> List[ProjectMember]:
         return self.db.query(ProjectMember).filter(ProjectMember.project_id == project_id).all()
 
+    def get_project_member_by_user(self, project_id: int, user_id: int) -> Optional[ProjectMember]:
+        return self.db.query(ProjectMember).filter(
+            ProjectMember.project_id == project_id,
+            ProjectMember.user_id == user_id
+        ).first()
+
     def get_user_projects(self, user_id: int) -> List[ProjectMember]:
         return self.db.query(ProjectMember).filter(ProjectMember.user_id == user_id).all()
 
     def is_user_in_project(self, project_id: int, user_id: int) -> bool:
-        return self.db.query(ProjectMember).filter(
-            ProjectMember.project_id == project_id,
-            ProjectMember.user_id == user_id
-        ).first() is not None
+        return self.get_project_member_by_user(project_id, user_id) is not None
 
     def create_project_member(self, member_data: ProjectMemberCreateRequest) -> ProjectMember:
         member = ProjectMember(
@@ -53,10 +56,7 @@ class ProjectMemberRepository:
         return False
 
     def remove_user_from_project(self, project_id: int, user_id: int) -> bool:
-        db_member = self.db.query(ProjectMember).filter(
-            ProjectMember.project_id == project_id,
-            ProjectMember.user_id == user_id
-        ).first()
+        db_member = self.get_project_member_by_user(project_id, user_id)
         if db_member:
             self.db.delete(db_member)
             self.db.commit()
