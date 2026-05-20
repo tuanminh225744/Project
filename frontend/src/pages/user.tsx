@@ -2,7 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
 export default function User() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  let [searchParams] = useSearchParams();
   const location = useLocation();
   const page = searchParams.get("page");
   const limit = searchParams.get("limit");
