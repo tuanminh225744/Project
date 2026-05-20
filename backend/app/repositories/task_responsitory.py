@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from datetime import datetime
 from app.models.tasks import Task
+from app.models.project_members import ProjectMember
+from app.models.projects import Project
 from app.schemas.task_schema import TaskCreateRequest, TaskUpdateRequest
+from sqlalchemy import and_, or_
 
 
 class TaskRepository:
@@ -22,6 +26,45 @@ class TaskRepository:
 
     def get_tasks_by_creator(self, creator_id: int, skip: int = 0, limit: int = 100) -> List[Task]:
         return self.db.query(Task).filter(Task.created_by == creator_id).offset(skip).limit(limit).all()
+
+    def get_accessible_tasks_by_filters(
+        self,
+        user_id: int,
+        status: Optional[str] = None,
+        assignee_id: Optional[int] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        skip: int = 0,
+        limit: int = 100
+    ) -> List[Task]:
+        query = self.db.query(Task).join(
+            Project,
+            Project.id == Task.project_id
+        ).outerjoin(
+            ProjectMember,
+            and_(
+                ProjectMember.project_id == Task.project_id,
+                ProjectMember.user_id == user_id
+            )
+        ).filter(
+            or_(
+                Project.owner_id == user_id,
+                Task.created_by == user_id,
+                Task.assignee_id == user_id,
+                ProjectMember.user_id == user_id
+            )
+        )
+
+        if status is not None:
+            query = query.filter(Task.status == status)
+        if assignee_id is not None:
+            query = query.filter(Task.assignee_id == assignee_id)
+        if start_date is not None:
+            query = query.filter(Task.due_date >= start_date)
+        if end_date is not None:
+            query = query.filter(Task.due_date <= end_date)
+
+        return query.distinct().offset(skip).limit(limit).all()
 
     def create_task(self, task_data: TaskCreateRequest) -> Task:
         task = Task(

@@ -11,17 +11,24 @@ from app.schemas.task_schema import TaskCreateRequest, TaskUpdateRequest
 from app.services.task_service import TaskService
 
 
-def make_task(task_id=1, project_id=1, created_by=10, assignee_id=20):
+def make_task(
+    task_id=1,
+    project_id=1,
+    created_by=10,
+    assignee_id=20,
+    status="todo",
+    due_date=None,
+):
     return Task(
         id=task_id,
         project_id=project_id,
         title="Test Task",
         description="Test description",
-        status="todo",
+        status=status,
         priority="medium",
         assignee_id=assignee_id,
         created_by=created_by,
-        due_date=None,
+        due_date=due_date,
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
@@ -210,6 +217,205 @@ def test_get_my_tasks_combines_deduplicates_and_filters_access(service):
     assert sorted(task.id for task in result) == [1, 2]
     service.task_repository.get_tasks_by_creator.assert_called_once_with(10, 0, 10)
     service.task_repository.get_tasks_by_assignee.assert_called_once_with(10, 0, 10)
+
+
+def test_get_tasks_by_filters_with_status(service):
+    service.task_repository.get_accessible_tasks_by_filters = Mock(
+        return_value=[make_task(1, status="done")]
+    )
+
+    result = service.get_tasks_by_filters(user_id=10, status="done", skip=0, limit=10)
+
+    assert len(result) == 1
+    assert result[0].id == 1
+    assert result[0].status == "done"
+    service.task_repository.get_accessible_tasks_by_filters.assert_called_once_with(
+        user_id=10,
+        status="done",
+        assignee_id=None,
+        start_date=None,
+        end_date=None,
+        skip=0,
+        limit=10,
+    )
+
+
+def test_get_tasks_by_filters_with_assignee(service):
+    service.task_repository.get_accessible_tasks_by_filters = Mock(
+        return_value=[make_task(1, assignee_id=20)]
+    )
+
+    result = service.get_tasks_by_filters(user_id=10, assignee_id=20, skip=5, limit=15)
+
+    assert len(result) == 1
+    assert result[0].assignee_id == 20
+    service.task_repository.get_accessible_tasks_by_filters.assert_called_once_with(
+        user_id=10,
+        status=None,
+        assignee_id=20,
+        start_date=None,
+        end_date=None,
+        skip=5,
+        limit=15,
+    )
+
+
+def test_get_tasks_by_filters_with_date_range(service):
+    start_date = datetime(2026, 5, 1, 0, 0, 0)
+    end_date = datetime(2026, 5, 31, 23, 59, 59)
+    due_date = datetime(2026, 5, 20, 12, 0, 0)
+    service.task_repository.get_accessible_tasks_by_filters = Mock(
+        return_value=[make_task(1, due_date=due_date)]
+    )
+
+    result = service.get_tasks_by_filters(
+        user_id=10,
+        start_date=start_date,
+        end_date=end_date,
+        skip=0,
+        limit=10,
+    )
+
+    assert len(result) == 1
+    assert result[0].due_date == due_date
+    service.task_repository.get_accessible_tasks_by_filters.assert_called_once_with(
+        user_id=10,
+        status=None,
+        assignee_id=None,
+        start_date=start_date,
+        end_date=end_date,
+        skip=0,
+        limit=10,
+    )
+
+
+def test_get_tasks_by_filters_with_status_and_assignee(service):
+    service.task_repository.get_accessible_tasks_by_filters = Mock(
+        return_value=[make_task(1, assignee_id=20, status="inprogress")]
+    )
+
+    result = service.get_tasks_by_filters(
+        user_id=10,
+        status="inprogress",
+        assignee_id=20,
+        skip=0,
+        limit=10,
+    )
+
+    assert len(result) == 1
+    assert result[0].status == "inprogress"
+    assert result[0].assignee_id == 20
+    service.task_repository.get_accessible_tasks_by_filters.assert_called_once_with(
+        user_id=10,
+        status="inprogress",
+        assignee_id=20,
+        start_date=None,
+        end_date=None,
+        skip=0,
+        limit=10,
+    )
+
+
+def test_get_tasks_by_filters_with_status_and_date_range(service):
+    start_date = datetime(2026, 5, 1, 0, 0, 0)
+    end_date = datetime(2026, 5, 31, 23, 59, 59)
+    due_date = datetime(2026, 5, 10, 8, 30, 0)
+    service.task_repository.get_accessible_tasks_by_filters = Mock(
+        return_value=[make_task(1, status="todo", due_date=due_date)]
+    )
+
+    result = service.get_tasks_by_filters(
+        user_id=10,
+        status="todo",
+        start_date=start_date,
+        end_date=end_date,
+        skip=0,
+        limit=10,
+    )
+
+    assert len(result) == 1
+    assert result[0].status == "todo"
+    assert result[0].due_date == due_date
+    service.task_repository.get_accessible_tasks_by_filters.assert_called_once_with(
+        user_id=10,
+        status="todo",
+        assignee_id=None,
+        start_date=start_date,
+        end_date=end_date,
+        skip=0,
+        limit=10,
+    )
+
+
+def test_get_tasks_by_filters_with_assignee_and_date_range(service):
+    start_date = datetime(2026, 5, 1, 0, 0, 0)
+    end_date = datetime(2026, 5, 31, 23, 59, 59)
+    due_date = datetime(2026, 5, 25, 9, 0, 0)
+    service.task_repository.get_accessible_tasks_by_filters = Mock(
+        return_value=[make_task(1, assignee_id=20, due_date=due_date)]
+    )
+
+    result = service.get_tasks_by_filters(
+        user_id=10,
+        assignee_id=20,
+        start_date=start_date,
+        end_date=end_date,
+        skip=0,
+        limit=10,
+    )
+
+    assert len(result) == 1
+    assert result[0].assignee_id == 20
+    assert result[0].due_date == due_date
+    service.task_repository.get_accessible_tasks_by_filters.assert_called_once_with(
+        user_id=10,
+        status=None,
+        assignee_id=20,
+        start_date=start_date,
+        end_date=end_date,
+        skip=0,
+        limit=10,
+    )
+
+
+def test_get_tasks_by_filters_with_all_filters(service):
+    start_date = datetime(2026, 5, 1, 0, 0, 0)
+    end_date = datetime(2026, 5, 31, 23, 59, 59)
+    due_date = datetime(2026, 5, 15, 14, 0, 0)
+    service.task_repository.get_accessible_tasks_by_filters = Mock(
+        return_value=[
+            make_task(
+                1,
+                assignee_id=20,
+                status="done",
+                due_date=due_date,
+            )
+        ]
+    )
+
+    result = service.get_tasks_by_filters(
+        user_id=10,
+        status="done",
+        assignee_id=20,
+        start_date=start_date,
+        end_date=end_date,
+        skip=0,
+        limit=10,
+    )
+
+    assert len(result) == 1
+    assert result[0].status == "done"
+    assert result[0].assignee_id == 20
+    assert result[0].due_date == due_date
+    service.task_repository.get_accessible_tasks_by_filters.assert_called_once_with(
+        user_id=10,
+        status="done",
+        assignee_id=20,
+        start_date=start_date,
+        end_date=end_date,
+        skip=0,
+        limit=10,
+    )
 
 
 def test_create_task_success_sets_created_by(service):
