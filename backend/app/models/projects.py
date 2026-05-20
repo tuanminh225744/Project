@@ -11,7 +11,7 @@ class Project(Base):
             name="valid_status_check"
         ),
         CheckConstraint(
-            "priority IN ('low', 'medium', 'done')", 
+            "priority IN ('low', 'medium', 'high')", 
             name="valid_priority_check"
         ),
     )

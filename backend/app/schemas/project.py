@@ -1,6 +1,8 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import datetime
 from typing import Optional
+
+PROJECT_PRIORITIES = {"low", "medium", "high"}
 
 
 class ProjectBase(BaseModel):
@@ -9,6 +11,13 @@ class ProjectBase(BaseModel):
     status: str = "todo"
     priority: str = "medium"
     due_date: Optional[datetime] = None
+
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, value: str) -> str:
+        if value not in PROJECT_PRIORITIES:
+            raise ValueError("priority must be one of: low, medium, high")
+        return value
 
 
 class ProjectCreateRequest(ProjectBase):
@@ -21,6 +30,13 @@ class ProjectUpdateRequest(BaseModel):
     status: Optional[str] = None
     priority: Optional[str] = None
     due_date: Optional[datetime] = None
+
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in PROJECT_PRIORITIES:
+            raise ValueError("priority must be one of: low, medium, high")
+        return value
 
 
 class ProjectResponse(ProjectBase):
