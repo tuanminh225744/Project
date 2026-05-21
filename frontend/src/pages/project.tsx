@@ -1,9 +1,20 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, Button, Card, Empty, Form, Input, Modal, Select, Spin, Typography } from "antd";
+import {
+  Alert,
+  Button,
+  Card,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  Select,
+  Spin,
+  Typography,
+} from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   createProjectSchema,
   type CreateProjectFormValues,
@@ -44,7 +55,9 @@ function Project() {
     onMutate: async (newProject: CreateProjectPayload) => {
       await queryClient.cancelQueries({ queryKey: ["projects"] });
 
-      const previousProjects = queryClient.getQueryData<ProjectItem[]>(["projects"]);
+      const previousProjects = queryClient.getQueryData<ProjectItem[]>([
+        "projects",
+      ]);
       const optimisticProject: ProjectItem = {
         id: Date.now() * -1,
         name: newProject.name,
@@ -56,10 +69,10 @@ function Project() {
         updated_at: null,
       };
 
-      queryClient.setQueryData<ProjectItem[]>(["projects"], (currentProjects = []) => [
-        optimisticProject,
-        ...currentProjects,
-      ]);
+      queryClient.setQueryData<ProjectItem[]>(
+        ["projects"],
+        (currentProjects = []) => [optimisticProject, ...currentProjects],
+      );
 
       return { previousProjects };
     },
@@ -67,10 +80,13 @@ function Project() {
       queryClient.setQueryData(["projects"], context?.previousProjects);
     },
     onSuccess: (createdProject) => {
-      queryClient.setQueryData<ProjectItem[]>(["projects"], (currentProjects = []) => [
-        createdProject,
-        ...currentProjects.filter((project) => project.id > 0),
-      ]);
+      queryClient.setQueryData<ProjectItem[]>(
+        ["projects"],
+        (currentProjects = []) => [
+          createdProject,
+          ...currentProjects.filter((project) => project.id > 0),
+        ],
+      );
       setIsModalOpen(false);
       reset();
     },
@@ -208,7 +224,9 @@ function Project() {
               <Controller
                 name="name"
                 control={control}
-                render={({ field }) => <Input {...field} placeholder="Nhập tên project" />}
+                render={({ field }) => (
+                  <Input {...field} placeholder="Nhập tên project" />
+                )}
               />
             </Form.Item>
 
@@ -250,15 +268,17 @@ function Project() {
                 name="description"
                 control={control}
                 render={({ field }) => (
-                  <Input.TextArea {...field} rows={4} placeholder="Nhập mô tả project" />
+                  <Input.TextArea
+                    {...field}
+                    rows={4}
+                    placeholder="Nhập mô tả project"
+                  />
                 )}
               />
             </Form.Item>
           </Form>
         </Modal>
       </div>
-
-      <Outlet />
     </main>
   );
 }

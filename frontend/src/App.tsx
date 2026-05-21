@@ -26,9 +26,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/project" element={<Project />}>
-          <Route path="/project/:projectId" element={<ProjectDetail />} />
-        </Route>
+        <Route path="/project" element={<Project />} />
+        <Route path="/project/:projectId" element={<ProjectDetail />} />
         <Route path="/user" element={<User />} />
       </Routes>
     </Suspense>
