@@ -7,7 +7,7 @@ class Project(Base):
     __tablename__ = "projects"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('todo', 'inprogress', 'done')", 
+            "status IN ('todo', 'in_progress', 'done')", 
             name="valid_status_check"
         ),
         CheckConstraint(
