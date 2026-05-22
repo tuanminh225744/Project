@@ -8,8 +8,7 @@ class TaskCommentBase(BaseModel):
 
 
 class TaskCommentCreateRequest(TaskCommentBase):
-    task_id: int
-    user_id: int
+    pass
 
 
 class TaskCommentUpdateRequest(BaseModel):

@@ -17,10 +17,15 @@ class TaskCommentRepository:
     def get_comments_by_user(self, user_id: int, skip: int = 0, limit: int = 100) -> List[TaskComment]:
         return self.db.query(TaskComment).filter(TaskComment.user_id == user_id).offset(skip).limit(limit).all()
 
-    def create_task_comment(self, comment_data: TaskCommentCreateRequest) -> TaskComment:
+    def create_task_comment(
+        self,
+        task_id: int,
+        user_id: int,
+        comment_data: TaskCommentCreateRequest,
+    ) -> TaskComment:
         comment = TaskComment(
-            task_id=comment_data.task_id,
-            user_id=comment_data.user_id,
+            task_id=task_id,
+            user_id=user_id,
             content=comment_data.content
         )
         self.db.add(comment)

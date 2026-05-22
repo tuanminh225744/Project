@@ -14,7 +14,7 @@ class TaskBase(BaseModel):
 
 class TaskCreateRequest(TaskBase):
     project_id: int
-    created_by: int
+    created_by: Optional[int] = None
 
 
 class TaskUpdateRequest(BaseModel):

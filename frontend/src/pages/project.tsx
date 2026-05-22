@@ -1,7 +1,24 @@
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, Button, Card, Empty, Form, Input, Modal, Spin, Typography } from "antd";
-import { useNavigate, Outlet } from "react-router-dom";
+import {
+  Alert,
+  Button,
+  Card,
+  Empty,
+  Form,
+  Input,
+  Modal,
+  Select,
+  Spin,
+  Typography,
+} from "antd";
+import { Controller, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import {
+  createProjectSchema,
+  type CreateProjectFormValues,
+} from "../schemas/project_schema";
 import {
   createProjectApi,
   getProjectsApi,
@@ -9,15 +26,23 @@ import {
   type Project as ProjectItem,
 } from "../services/project_service";
 
-type CreateProjectFormValues = {
-  name: string;
-  description?: string;
-};
-
 function Project() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [form] = Form.useForm<CreateProjectFormValues>();
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CreateProjectFormValues>({
+    resolver: zodResolver(createProjectSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      priority: "medium",
+      due_date: "",
+    },
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const projectsQuery = useQuery({
@@ -30,20 +55,25 @@ function Project() {
     onMutate: async (newProject: CreateProjectPayload) => {
       await queryClient.cancelQueries({ queryKey: ["projects"] });
 
-      const previousProjects = queryClient.getQueryData<ProjectItem[]>(["projects"]);
+      const previousProjects = queryClient.getQueryData<ProjectItem[]>([
+        "projects",
+      ]);
       const optimisticProject: ProjectItem = {
         id: Date.now() * -1,
         name: newProject.name,
         description: newProject.description || null,
+        priority: newProject.priority,
+        due_date: newProject.due_date,
         owner_id: 0,
         created_at: new Date().toISOString(),
         updated_at: null,
+        members: null,
       };
 
-      queryClient.setQueryData<ProjectItem[]>(["projects"], (currentProjects = []) => [
-        optimisticProject,
-        ...currentProjects,
-      ]);
+      queryClient.setQueryData<ProjectItem[]>(
+        ["projects"],
+        (currentProjects = []) => [optimisticProject, ...currentProjects],
+      );
 
       return { previousProjects };
     },
@@ -51,12 +81,15 @@ function Project() {
       queryClient.setQueryData(["projects"], context?.previousProjects);
     },
     onSuccess: (createdProject) => {
-      queryClient.setQueryData<ProjectItem[]>(["projects"], (currentProjects = []) => [
-        createdProject,
-        ...currentProjects.filter((project) => project.id > 0),
-      ]);
+      queryClient.setQueryData<ProjectItem[]>(
+        ["projects"],
+        (currentProjects = []) => [
+          createdProject,
+          ...currentProjects.filter((project) => project.id > 0),
+        ],
+      );
       setIsModalOpen(false);
-      form.resetFields();
+      reset();
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -66,14 +99,16 @@ function Project() {
   const projects = projectsQuery.data ?? [];
 
   const handleOpenCreateModal = () => {
-    form.resetFields();
+    reset();
     setIsModalOpen(true);
   };
 
   const handleCreateProject = (values: CreateProjectFormValues) => {
     createProjectMutation.mutate({
-      name: values.name.trim(),
-      description: values.description?.trim(),
+      name: values.name,
+      description: values.description,
+      priority: values.priority,
+      due_date: `${values.due_date}T00:00:00`,
     });
   };
 
@@ -174,31 +209,77 @@ function Project() {
           cancelText="Hủy"
           confirmLoading={createProjectMutation.isPending}
           onCancel={() => setIsModalOpen(false)}
-          onOk={() => form.submit()}
+          onOk={handleSubmit(handleCreateProject)}
           destroyOnHidden
         >
-          <Form<CreateProjectFormValues>
-            form={form}
+          <Form
             layout="vertical"
             requiredMark={false}
-            onFinish={handleCreateProject}
+            onSubmitCapture={handleSubmit(handleCreateProject)}
           >
             <Form.Item
               label="Tên project"
-              name="name"
-              rules={[{ required: true, message: "Vui lòng nhập tên project." }]}
+              validateStatus={errors.name ? "error" : undefined}
+              help={errors.name?.message}
             >
-              <Input placeholder="Nhập tên project" />
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <Input {...field} placeholder="Nhập tên project" />
+                )}
+              />
             </Form.Item>
 
-            <Form.Item label="Mô tả" name="description">
-              <Input.TextArea rows={4} placeholder="Nhập mô tả project" />
+            <Form.Item
+              label="Priority"
+              validateStatus={errors.priority ? "error" : undefined}
+              help={errors.priority?.message}
+            >
+              <Controller
+                name="priority"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={[
+                      { value: "low", label: "Low" },
+                      { value: "medium", label: "Medium" },
+                      { value: "high", label: "High" },
+                    ]}
+                  />
+                )}
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Due date"
+              validateStatus={errors.due_date ? "error" : undefined}
+              help={errors.due_date?.message}
+            >
+              <Controller
+                name="due_date"
+                control={control}
+                render={({ field }) => <Input {...field} type="date" />}
+              />
+            </Form.Item>
+
+            <Form.Item label="Mô tả">
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <Input.TextArea
+                    {...field}
+                    rows={4}
+                    placeholder="Nhập mô tả project"
+                  />
+                )}
+              />
             </Form.Item>
           </Form>
         </Modal>
       </div>
-
-      <Outlet />
     </main>
   );
 }

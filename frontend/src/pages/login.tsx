@@ -23,7 +23,7 @@ export default function Login() {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       await login(values);
-      navigate("/dashboard", { replace: true });
+      navigate("/project", { replace: true });
     } catch {
       // Error message is managed by the global auth store.
     }

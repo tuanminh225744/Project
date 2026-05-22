@@ -25,19 +25,16 @@ class TaskCommentService:
         comments = self.task_comment_repository.get_task_comments(task_id, skip, limit)
         return [TaskCommentResponse.model_validate(comment) for comment in comments]
 
-    def create_comment(self, comment_data: TaskCommentCreateRequest, user_id: int) -> TaskCommentResponse:
+    def create_comment(self, task_id: int, comment_data: TaskCommentCreateRequest, user_id: int) -> TaskCommentResponse:
         # Check if user can access the task
-        task = self.task_repository.get_task(comment_data.task_id)
+        task = self.task_repository.get_task(task_id)
         if not task:
             raise ValueError("Task not found")
 
         if not self._can_access_task(task, user_id):
             raise ValueError("Access denied")
 
-        # Set user_id to the commenter
-        comment_data.user_id = user_id
-
-        comment = self.task_comment_repository.create_task_comment(comment_data)
+        comment = self.task_comment_repository.create_task_comment(task_id, user_id, comment_data)
         return TaskCommentResponse.model_validate(comment)
 
     def update_comment(self, comment_id: int, comment_update: TaskCommentUpdateRequest, user_id: int) -> Optional[TaskCommentResponse]:

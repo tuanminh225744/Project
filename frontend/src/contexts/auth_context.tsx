@@ -35,3 +35,4 @@ export function AuthProvider({ children }: any) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+// file này chỉ là file học, không phải file dự án

@@ -7,13 +7,15 @@ from app.api.routers.project_router import router as project_router
 from app.api.routers.project_member_router import router as project_member_router
 from app.api.routers.task_management_router import router as task_management_router
 from app.api.routers.task_comment_router import router as task_comment_router
+from app.core.exception_handlers import register_exception_handlers
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React Vite
+    allow_origins=["http://localhost:5173","http://localhost", "http://127.0.0.1",],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

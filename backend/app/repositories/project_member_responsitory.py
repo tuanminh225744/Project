@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from app.models.project_members import ProjectMember
 from app.schemas.project_member import ProjectMemberCreateRequest, ProjectMemberUpdateRequest
@@ -9,19 +9,27 @@ class ProjectMemberRepository:
         self.db = db
 
     def get_project_member(self, member_id: int) -> Optional[ProjectMember]:
-        return self.db.query(ProjectMember).filter(ProjectMember.id == member_id).first()
+        return self.db.query(ProjectMember).options(
+                joinedload(ProjectMember.user),
+            ).filter(ProjectMember.id == member_id).first()
 
     def get_project_members(self, project_id: int) -> List[ProjectMember]:
-        return self.db.query(ProjectMember).filter(ProjectMember.project_id == project_id).all()
+        return self.db.query(ProjectMember).options(
+                joinedload(ProjectMember.user),
+            ).filter(ProjectMember.project_id == project_id).all()
 
     def get_project_member_by_user(self, project_id: int, user_id: int) -> Optional[ProjectMember]:
-        return self.db.query(ProjectMember).filter(
+        return self.db.query(ProjectMember).options(
+                joinedload(ProjectMember.user),
+            ).filter(
             ProjectMember.project_id == project_id,
             ProjectMember.user_id == user_id
         ).first()
 
     def get_user_projects(self, user_id: int) -> List[ProjectMember]:
-        return self.db.query(ProjectMember).filter(ProjectMember.user_id == user_id).all()
+        return self.db.query(ProjectMember).options(
+                joinedload(ProjectMember.user),
+            ).filter(ProjectMember.user_id == user_id).all()
 
     def is_user_in_project(self, project_id: int, user_id: int) -> bool:
         return self.get_project_member_by_user(project_id, user_id) is not None

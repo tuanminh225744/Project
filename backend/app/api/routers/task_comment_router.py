@@ -32,13 +32,9 @@ def create_comment(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    # Ensure the task_id in URL matches the one in request
-    if comment.task_id != task_id:
-        raise HTTPException(status_code=400, detail="Task ID mismatch")
-
     comment_service = TaskCommentService(db)
     try:
-        return comment_service.create_comment(comment, current_user["user_id"])
+        return comment_service.create_comment(task_id, comment, current_user["user_id"])
     except ValueError as e:
         raise HTTPException(status_code=403, detail=str(e))
 

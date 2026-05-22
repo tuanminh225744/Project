@@ -1,6 +1,9 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator, Field
 from datetime import datetime
 from typing import Optional
+from app.schemas.project_member import ProjectMemberBase, ProjectMemberResponse
+
+PROJECT_PRIORITIES = {"low", "medium", "high"}
 
 
 class ProjectBase(BaseModel):
@@ -9,6 +12,13 @@ class ProjectBase(BaseModel):
     status: str = "todo"
     priority: str = "medium"
     due_date: Optional[datetime] = None
+
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, value: str) -> str:
+        if value not in PROJECT_PRIORITIES:
+            raise ValueError("priority must be one of: low, medium, high")
+        return value
 
 
 class ProjectCreateRequest(ProjectBase):
@@ -22,12 +32,20 @@ class ProjectUpdateRequest(BaseModel):
     priority: Optional[str] = None
     due_date: Optional[datetime] = None
 
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in PROJECT_PRIORITIES:
+            raise ValueError("priority must be one of: low, medium, high")
+        return value
+
 
 class ProjectResponse(ProjectBase):
     id: int
     owner_id: int
     created_at: datetime
     updated_at: Optional[datetime]
+    members: list[ProjectMemberResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(
         from_attributes=True

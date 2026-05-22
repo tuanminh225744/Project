@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.repositories.user_responsitory import UserRepository
 from app.models.users import User
-from app.schemas.user import UserCreateRequest
+from app.schemas.user import UserCreateRequest, UserResponse
 
 from app.core.security import (
     hash_password,
@@ -54,7 +54,8 @@ class AuthService:
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
-            "token_type": "bearer"
+            "token_type": "bearer",
+            "user": UserResponse.model_validate(user)
         }
 
     def refresh_access_token(self, refresh_token: str) -> dict:

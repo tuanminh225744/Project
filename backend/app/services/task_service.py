@@ -119,7 +119,7 @@ class TaskService:
         if not self._can_access_project(task_data.project_id, creator_id):
             raise ValueError("Access denied")
 
-        # Set created_by to the creator
+        # Always trust the authenticated user, not client-provided created_by.
         task_data.created_by = creator_id
 
         task = self.task_repository.create_task(task_data)
