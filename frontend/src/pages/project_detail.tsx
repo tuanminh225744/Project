@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import {
@@ -42,7 +42,7 @@ import {
   deleteProjectApi,
   getProjectByIdApi,
 } from "../services/project_service";
-import { getProjectMembersApi } from "../services/project_member_service";
+// import { getProjectMembersApi } from "../services/project_member_service";
 import type {
   CreateProjectFormValues,
   UpdateProjectFormValues,
@@ -51,36 +51,6 @@ import type {
 type TaskStatus = "todo" | "in_progress" | "done";
 
 type Priority = "low" | "medium" | "high";
-
-interface MemberItem {
-  id: number;
-  name: string;
-  email: string;
-  role: "owner" | "member";
-}
-
-const membersMock: MemberItem[] = [
-  {
-    id: 1,
-    name: "Nguyen Van A",
-    email: "nguyenvana@example.com",
-    role: "owner",
-  },
-
-  {
-    id: 2,
-    name: "Tran Thi B",
-    email: "tranthib@example.com",
-    role: "member",
-  },
-
-  {
-    id: 3,
-    name: "Le Van C",
-    email: "levanc@example.com",
-    role: "member",
-  },
-];
 
 const statusLabels: Record<TaskStatus, string> = {
   todo: "Todo",
@@ -150,10 +120,10 @@ function ProjectDetail() {
     enabled: !!projectId,
   });
 
-  const { data: project_members } = useQuery({
-    queryKey: ["project_members"],
-    queryFn: () => getProjectMembersApi(Number(projectId)),
-  });
+  // const { data: project_members } = useQuery({
+  //   queryKey: ["project_members"],
+  //   queryFn: () => getProjectMembersApi(Number(projectId)),
+  // });
 
   const filteredTasks = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
@@ -353,9 +323,17 @@ function ProjectDetail() {
       }),
 
       columnHelper.accessor("assignee_id", {
-        header: "Assignee ID",
+        header: "Assignee",
 
-        cell: (info) => info.getValue() || "N/A",
+        cell: (info) => {
+          const assigneeId = info.getValue();
+
+          const member = project?.members?.find(
+            (member) => member.user.id === assigneeId,
+          );
+
+          return member?.user?.username || "N/A";
+        },
       }),
 
       columnHelper.accessor("due_date", {
@@ -405,7 +383,7 @@ function ProjectDetail() {
         },
       }),
     ],
-    [],
+    [project],
   );
 
   const table = useReactTable({
@@ -609,6 +587,7 @@ function ProjectDetail() {
           mode="create"
           onCancel={() => setCreateTaskModalOpen(false)}
           onSubmit={handleCreateTask}
+          members={project?.members || []}
         />
 
         <TaskModal
@@ -621,6 +600,7 @@ function ProjectDetail() {
             setSelectedTask(null);
           }}
           onSubmit={handleUpdateTask}
+          members={project?.members || []}
         />
 
         <DeleteTaskModal
@@ -646,7 +626,7 @@ function ProjectDetail() {
 
         <DeleteProjectModal
           open={deleteProjectModalOpen}
-          projectName={project.name}
+          projectName={project?.name}
           onCancel={() => {
             setDeleteProjectModalOpen(false);
           }}

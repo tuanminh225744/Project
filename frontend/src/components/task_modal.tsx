@@ -1,7 +1,8 @@
-import { Modal, Input, Select, DatePicker, InputNumber } from "antd";
+import { Modal, Input, Select, DatePicker } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
+import { useEffect } from "react";
 
 import { taskSchema, type TaskFormData } from "../schemas/task_schema";
 
@@ -11,6 +12,7 @@ interface TaskModalProps {
   initialValues?: Partial<TaskFormData>;
   onCancel: () => void;
   onSubmit: (data: TaskFormData) => void;
+  members?: any[];
 }
 
 function TaskModal({
@@ -19,10 +21,12 @@ function TaskModal({
   initialValues,
   onCancel,
   onSubmit,
+  members,
 }: TaskModalProps) {
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -36,6 +40,17 @@ function TaskModal({
     },
   });
 
+  useEffect(() => {
+    reset({
+      title: initialValues?.title || "",
+      description: initialValues?.description || "",
+      status: initialValues?.status || "todo",
+      priority: initialValues?.priority || "medium",
+      assignee_id: initialValues?.assignee_id,
+      due_date: initialValues?.due_date,
+    });
+  }, [initialValues, reset]);
+
   return (
     <Modal
       open={open}
@@ -43,6 +58,9 @@ function TaskModal({
       onCancel={onCancel}
       onOk={handleSubmit(onSubmit)}
       okText={mode === "create" ? "Create" : "Update"}
+      style={{
+        top: 20,
+      }}
     >
       <div className="space-y-4">
         <div>
@@ -118,16 +136,20 @@ function TaskModal({
         </div>
 
         <div>
-          <label>Assignee ID</label>
+          <label>Assignee</label>
 
           <Controller
             control={control}
             name="assignee_id"
             render={({ field }) => (
-              <InputNumber
+              <Select
                 {...field}
-                className="!w-full"
-                placeholder="Enter assignee id"
+                className="w-full"
+                placeholder="Select assignee"
+                options={members?.map((member) => ({
+                  label: member.user?.username,
+                  value: member.user?.id,
+                }))}
               />
             )}
           />

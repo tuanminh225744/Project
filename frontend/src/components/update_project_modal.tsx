@@ -43,6 +43,9 @@ function UpdateProjectModal({
       onCancel={onCancel}
       onOk={handleSubmit(onSubmit)}
       okText={"Update"}
+      style={{
+        top: 20,
+      }}
     >
       <div className="space-y-4">
         {/* NAME */}
