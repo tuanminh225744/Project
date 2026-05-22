@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, field_validator, Field
 from datetime import datetime
 from typing import Optional
-from app.schemas.project_member import ProjectMemberBase
+from app.schemas.project_member import ProjectMemberBase, ProjectMemberResponse
 
 PROJECT_PRIORITIES = {"low", "medium", "high"}
 
@@ -12,7 +12,6 @@ class ProjectBase(BaseModel):
     status: str = "todo"
     priority: str = "medium"
     due_date: Optional[datetime] = None
-    members: list[ProjectMemberBase] = Field(default_factory=list)
 
     @field_validator("priority")
     @classmethod
@@ -46,6 +45,7 @@ class ProjectResponse(ProjectBase):
     owner_id: int
     created_at: datetime
     updated_at: Optional[datetime]
+    members: list[ProjectMemberResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(
         from_attributes=True

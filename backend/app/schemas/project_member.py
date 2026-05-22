@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Literal, Optional
 
-from app.schemas.user import UserBase
+from app.schemas.user import UserResponse
 
 class ProjectMemberBase(BaseModel):
     project_id: int
@@ -21,7 +21,7 @@ class ProjectMemberUpdateRequest(BaseModel):
 class ProjectMemberResponse(ProjectMemberBase):
     id: int
     joined_at: datetime
-    user: UserBase
+    user: UserResponse
 
     model_config = ConfigDict(
         from_attributes=True

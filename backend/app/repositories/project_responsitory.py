@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, func, or_
 from typing import List, Optional
 from datetime import date
@@ -12,13 +12,22 @@ class ProjectRepository:
         self.db = db
 
     def get_project(self, project_id: int) -> Optional[Project]:
-        return self.db.query(Project).filter(Project.id == project_id).first()
+        return self.db.query(Project).options(
+            joinedload(Project.members)
+            .joinedload(ProjectMember.user)
+        ).filter(Project.id == project_id).first()
 
     def get_projects(self, skip: int = 0, limit: int = 100) -> List[Project]:
-        return self.db.query(Project).offset(skip).limit(limit).all()
+        return self.db.query(Project).options(
+            joinedload(Project.members)
+            .joinedload(ProjectMember.user)
+        ).offset(skip).limit(limit).all()
 
     def get_projects_by_owner(self, owner_id: int, skip: int = 0, limit: int = 100) -> List[Project]:
-        return self.db.query(Project).filter(Project.owner_id == owner_id).offset(skip).limit(limit).all()
+        return self.db.query(Project).options(
+            joinedload(Project.members)
+            .joinedload(ProjectMember.user)
+        ).filter(Project.owner_id == owner_id).offset(skip).limit(limit).all()
 
     def get_accessible_projects_by_filters(
         self,
@@ -29,7 +38,9 @@ class ProjectRepository:
         skip: int = 0,
         limit: int = 100
     ) -> List[Project]:
-        query = self.db.query(Project).outerjoin(
+        query = self.db.query(Project).options(
+            joinedload(Project.members)
+            .joinedload(ProjectMember.user)).outerjoin(
             ProjectMember,
             and_(
                 ProjectMember.project_id == Project.id,
