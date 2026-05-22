@@ -24,8 +24,10 @@ function App() {
             </ProtectedRoute>
           }
         /> */}
-        <Route path="/project" element={<Project />} />
-        <Route path="/project/:projectId" element={<ProjectDetail />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/project" element={<Project />} />
+          <Route path="/project/:projectId" element={<ProjectDetail />} />
+        </Route>
       </Routes>
     </Suspense>
   );
