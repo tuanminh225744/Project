@@ -6,20 +6,13 @@ import {
   type LoginPayload,
   type RegisterPayload,
 } from "../services/auth_service";
+import { type User } from "../services/user_service";
 
 const getStoredAccessToken = () =>
   typeof window === "undefined" ? null : localStorage.getItem("accessToken");
 
 const getStoredRefreshToken = () =>
   typeof window === "undefined" ? null : localStorage.getItem("refreshToken");
-
-export interface User {
-  userId: number | string;
-  email: string;
-  username: string;
-  full_name: string;
-  avatar_url: string | null;
-}
 
 interface AuthState {
   user: User | null;
@@ -59,6 +52,7 @@ export const useAuthStore = create<AuthState>()(
             set({
               access_token: response.access_token,
               refresh_token: response.refresh_token,
+              user: response.user,
               isAuthentication: true,
               isLoading: false,
               error: null,
@@ -81,7 +75,8 @@ export const useAuthStore = create<AuthState>()(
           } catch (error) {
             set({
               isLoading: false,
-              error: "Không thể đăng ký tài khoản. Vui lòng kiểm tra lại thông tin.",
+              error:
+                "Không thể đăng ký tài khoản. Vui lòng kiểm tra lại thông tin.",
             });
             throw error;
           }

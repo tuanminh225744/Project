@@ -1,4 +1,5 @@
 import axiosInstance from "../api";
+import { type User } from "./user_service";
 
 export interface LoginPayload {
   username: string;
@@ -9,6 +10,7 @@ export interface LoginResponse {
   access_token: string;
   refresh_token: string;
   token_type: string;
+  user: User;
 }
 
 export interface RegisterPayload {
@@ -28,13 +30,20 @@ export const loginApi = async (payload: LoginPayload) => {
   formData.append("username", payload.username);
   formData.append("password", payload.password);
 
-  return axiosInstance.post<LoginResponse, LoginResponse>("/auth/login", formData, {
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+  return axiosInstance.post<LoginResponse, LoginResponse>(
+    "/auth/login",
+    formData,
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     },
-  });
+  );
 };
 
 export const registerApi = async (payload: RegisterPayload) => {
-  return axiosInstance.post<RegisterResponse, RegisterResponse>("/auth/register", payload);
+  return axiosInstance.post<RegisterResponse, RegisterResponse>(
+    "/auth/register",
+    payload,
+  );
 };

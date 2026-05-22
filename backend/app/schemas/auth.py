@@ -1,5 +1,7 @@
 from pydantic import BaseModel, EmailStr
 
+from app.schemas.user import UserResponse
+
 
 class RegisterRequest(BaseModel):
     username: str
@@ -19,6 +21,7 @@ class LoginResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
+    user: UserResponse
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str

@@ -16,3 +16,5 @@ async def send_email(request: SendEmailRequest):
 async def send_email_background(request: SendEmailRequest, background_tasks: BackgroundTasks):
     background_tasks.add_task(send_email_task.delay, request.to_email, request.subject, request.body)
     return SendEmailResponse(message="Email is being sent in the background")
+
+# file này chỉ là file học, không phải file dự án

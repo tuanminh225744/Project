@@ -52,6 +52,7 @@ import type {
   UpdateProjectFormValues,
 } from "../schemas/project_schema";
 import { getUsersApi, type User } from "../services/user_service";
+import { useAuthStore } from "../store/useAuthStore";
 
 type TaskStatus = "todo" | "in_progress" | "done";
 
@@ -136,6 +137,26 @@ function ProjectDetail() {
     queryKey: ["project_members"],
     queryFn: () => getProjectMembersApi(Number(projectId)),
   });
+
+  const currentUser = useAuthStore((state) => state.user);
+
+  const isOwner = project_members?.some(
+    (m) => m.user.id === currentUser?.id && m.role === "owner",
+  );
+
+  const canEditTask = (task: Task) => {
+    if (!currentUser) return false;
+
+    if (isOwner) return true;
+
+    return task.assignee_id === currentUser.id;
+  };
+
+  const canDeleteTask = () => isOwner;
+
+  const canUpdateProject = () => isOwner;
+
+  const canDeleteProject = () => isOwner;
 
   const filteredTasks = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
@@ -405,28 +426,30 @@ function ProjectDetail() {
 
           return (
             <Space>
-              <Button
-                size="small"
-                onClick={() => {
-                  setSelectedTask(task);
+              {canEditTask(task) && (
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setEditTaskModalOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+              )}
 
-                  setEditTaskModalOpen(true);
-                }}
-              >
-                Edit
-              </Button>
-
-              <Button
-                danger
-                size="small"
-                onClick={() => {
-                  setSelectedTask(task);
-
-                  setDeleteTaskModalOpen(true);
-                }}
-              >
-                Delete
-              </Button>
+              {canDeleteTask() && (
+                <Button
+                  danger
+                  size="small"
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setDeleteTaskModalOpen(true);
+                  }}
+                >
+                  Delete
+                </Button>
+              )}
             </Space>
           );
         },
@@ -464,17 +487,21 @@ function ProjectDetail() {
           <Space wrap>
             <Button onClick={() => navigate("/project")}>Quay lại</Button>
 
-            <Button
-              onClick={() => {
-                setUpdateProjectModalOpen(true);
-              }}
-            >
-              Sửa project
-            </Button>
+            {canUpdateProject() ? (
+              <Button
+                onClick={() => {
+                  setUpdateProjectModalOpen(true);
+                }}
+              >
+                Sửa project
+              </Button>
+            ) : null}
 
-            <Button danger onClick={() => setDeleteProjectModalOpen(true)}>
-              Xóa project
-            </Button>
+            {canDeleteProject() ? (
+              <Button danger onClick={() => setDeleteProjectModalOpen(true)}>
+                Xóa project
+              </Button>
+            ) : null}
 
             <Button type="primary" onClick={() => setCreateTaskModalOpen(true)}>
               Tạo task
