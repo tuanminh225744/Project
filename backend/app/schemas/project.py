@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import datetime
 from typing import Optional
-from app.schema.project_member import ProjectMemberBase
+from app.schemas.project_member import ProjectMemberBase
 
 PROJECT_PRIORITIES = {"low", "medium", "high"}
 
