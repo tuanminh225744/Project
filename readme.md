@@ -4,41 +4,41 @@
 
 ---
 
-✨ Features
-📁 Project: CRUD project, xem chi tiết, quản lý member
-✅ Task: CRUD task, theo dõi status (Todo / In Progress / Done), priority
-🔍 Search & Filter: tìm kiếm task, lọc theo status & priority
-👥 Member: thêm/xóa member, phân quyền (owner/member)
-🔐 Auth: login/logout, protected routes
-🚀 Tech Stack
-⚛️ React 18 + TypeScript + Vite
-🎨 TailwindCSS + Ant Design
-🔀 React Router v6
-🧠 Zustand (state management)
-📡 Axios (API client)
-🐳 Docker Setup (Fullstack Project)
+✨ Features<br>
+📁 Project: CRUD project, xem chi tiết, quản lý member<br>
+✅ Task: CRUD task, theo dõi status (Todo / In Progress / Done), priority<br>
+🔍 Search & Filter: tìm kiếm task, lọc theo status & priority<br>
+👥 Member: thêm/xóa member, phân quyền (owner/member)<br>
+🔐 Auth: login/logout, protected routes<br>
+🚀 Tech Stack<br>
+⚛️ React 18 + TypeScript + Vite<br>
+🎨 TailwindCSS + Ant Design<br>
+🔀 React Router v6<br>
+🧠 Zustand (state management)<br>
+📡 Axios (API client)<br>
+🐳 Docker Setup (Fullstack Project)<br>
 
 ---
 
-📁 Docker Compose Architecture
-Frontend (Nginx)
-↓
-Backend (FastAPI)
-↓
-PostgreSQL + Redis
+📁 Docker Compose Architecture<br>
+Frontend (Nginx)<br>
+↓<br>
+Backend (FastAPI)<br>
+↓<br>
+PostgreSQL + Redis<br>
 
 ---
 
-🚀 Run toàn bộ project
+🚀 Run toàn bộ project<br>
 
-📥 Clone project
-git clone <repository-url>
+📥 Clone project<br>
+git clone https://github.com/tuanminh225744/Project.git<br>
 
-📂 Vào thư mục project
-cd <project-folder>
+📂 Vào thư mục project<br>
+cd Project<br>
 
-📦 Build & start tất cả services
-docker compose up --build
+📦 Build & start tất cả services<br>
+docker compose up --build<br>
 
-⛔ Stop toàn bộ services
-docker compose down
+⛔ Stop toàn bộ services<br>
+docker compose down<br>
