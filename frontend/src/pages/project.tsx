@@ -67,6 +67,7 @@ function Project() {
         owner_id: 0,
         created_at: new Date().toISOString(),
         updated_at: null,
+        members: null,
       };
 
       queryClient.setQueryData<ProjectItem[]>(

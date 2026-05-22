@@ -1,4 +1,3 @@
-import Dashboard from "./pages/dashboard";
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 // import { Project } from "./pages/project";
@@ -7,7 +6,6 @@ import { ProtectedRoute } from "./hooks/protected_router";
 
 const Project = lazy(() => import("./pages/project"));
 const ProjectDetail = lazy(() => import("./pages/project_detail"));
-const User = lazy(() => import("./pages/user"));
 const Login = lazy(() => import("./pages/login"));
 const Register = lazy(() => import("./pages/register"));
 
@@ -18,17 +16,16 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Login />} />
-        <Route
+        {/* <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route path="/project" element={<Project />} />
         <Route path="/project/:projectId" element={<ProjectDetail />} />
-        <Route path="/user" element={<User />} />
       </Routes>
     </Suspense>
   );

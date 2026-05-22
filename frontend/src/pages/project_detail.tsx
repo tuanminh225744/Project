@@ -470,46 +470,52 @@ function ProjectDetail() {
     <main className="min-h-screen bg-slate-100 px-4 py-8">
       <div className="mx-auto w-full max-w-6xl">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+          <div className="w-full">
             <Typography.Text className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-              Project #{projectId ? projectId : ""}
+              Project #{projectId ?? ""}
             </Typography.Text>
 
-            <Typography.Title level={2} className="!mb-2 !mt-2">
-              {project ? project.name : ""}
+            <Typography.Title level={2} className="!mb-2 !mt-2 break-words">
+              {project?.name ?? ""}
             </Typography.Title>
 
             <Typography.Paragraph className="max-w-3xl text-slate-600">
-              {project ? project.description : ""}
+              {project?.description ?? ""}
             </Typography.Paragraph>
           </div>
 
-          <Space wrap>
-            <Button onClick={() => navigate("/project")}>Quay lại</Button>
+          <Space wrap className="w-full lg:w-auto">
+            <Button block onClick={() => navigate("/project")}>
+              Quay lại
+            </Button>
 
-            {canUpdateProject() ? (
-              <Button
-                onClick={() => {
-                  setUpdateProjectModalOpen(true);
-                }}
-              >
+            {canUpdateProject() && (
+              <Button block onClick={() => setUpdateProjectModalOpen(true)}>
                 Sửa project
               </Button>
-            ) : null}
+            )}
 
-            {canDeleteProject() ? (
-              <Button danger onClick={() => setDeleteProjectModalOpen(true)}>
+            {canDeleteProject() && (
+              <Button
+                block
+                danger
+                onClick={() => setDeleteProjectModalOpen(true)}
+              >
                 Xóa project
               </Button>
-            ) : null}
+            )}
 
-            <Button type="primary" onClick={() => setCreateTaskModalOpen(true)}>
+            <Button
+              block
+              type="primary"
+              onClick={() => setCreateTaskModalOpen(true)}
+            >
               Tạo task
             </Button>
           </Space>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
           <Card title="Danh sách task" className="shadow-sm">
             <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <Input.Search
@@ -520,9 +526,9 @@ function ProjectDetail() {
                 onChange={(e) => setSearchText(e.target.value)}
               />
 
-              <Space wrap>
+              <Space wrap className="w-full md:w-auto">
                 <Select
-                  className="w-36"
+                  className="w-full md:w-36"
                   value={statusFilter}
                   onChange={setStatusFilter}
                   options={[
@@ -549,7 +555,7 @@ function ProjectDetail() {
                 />
 
                 <Select
-                  className="w-36"
+                  className="w-full md:w-36"
                   value={priorityFilter}
                   onChange={setPriorityFilter}
                   options={[
@@ -578,45 +584,47 @@ function ProjectDetail() {
             </div>
 
             <div className="overflow-x-auto rounded-lg border border-slate-200">
-              <table className="min-w-[780px] w-full border-collapse bg-white text-left">
-                <thead className="bg-slate-50">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <th
-                          key={header.id}
-                          className="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600"
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                        </th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
+              <div className="min-w-[780px] lg:min-w-0">
+                <table className="w-full border-collapse bg-white text-left">
+                  <thead className="bg-slate-50">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <th
+                            key={header.id}
+                            className="border-b border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600"
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </th>
+                        ))}
+                      </tr>
+                    ))}
+                  </thead>
 
-                <tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <tr key={row.id} className="hover:bg-slate-50">
-                      {row.getVisibleCells().map((cell) => (
-                        <td
-                          key={cell.id}
-                          className="border-b border-slate-100 px-4 py-3 align-top"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  <tbody>
+                    {table.getRowModel().rows.map((row) => (
+                      <tr key={row.id} className="hover:bg-slate-50">
+                        {row.getVisibleCells().map((cell) => (
+                          <td
+                            key={cell.id}
+                            className="border-b border-slate-100 px-4 py-3 align-top"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {isLoading ? (
@@ -648,7 +656,7 @@ function ProjectDetail() {
                   key={member.id}
                   className="rounded-lg border border-slate-200 bg-white p-3"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <Typography.Text strong>
                         {member.user.username}

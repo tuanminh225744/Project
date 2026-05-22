@@ -50,7 +50,7 @@ export const getTasksApi = async () => {
 
 // Get tasks by project id
 export const getTasksByProjectApi = async (projectId: number | string) => {
-  return axiosInstance.get<Task[], Task[]>(`/tasks/?project_id=${projectId}`);
+  return axiosInstance.get<Task[], Task[]>(`/tasks/project/${projectId}`);
 };
 
 // Get task detail
