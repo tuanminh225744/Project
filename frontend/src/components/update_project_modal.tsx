@@ -16,7 +16,6 @@ interface UpdateProjectModalProps {
 
 function UpdateProjectModal({
   open,
-  mode,
   initialValues,
   onCancel,
   onSubmit,

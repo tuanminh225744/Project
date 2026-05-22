@@ -27,6 +27,7 @@ import TaskModal from "../components/task_modal";
 import DeleteTaskModal from "../components/delete_task_modal";
 import UpdateProjectModal from "../components/update_project_modal";
 import DeleteProjectModal from "../components/delete_project_modal";
+import AddMemberModal from "../components/add_member_modal";
 
 import {
   createTaskApi,
@@ -42,11 +43,15 @@ import {
   deleteProjectApi,
   getProjectByIdApi,
 } from "../services/project_service";
-// import { getProjectMembersApi } from "../services/project_member_service";
+import {
+  addMemberApi,
+  getProjectMembersApi,
+} from "../services/project_member_service";
 import type {
   CreateProjectFormValues,
   UpdateProjectFormValues,
 } from "../schemas/project_schema";
+import { getUsersApi, type User } from "../services/user_service";
 
 type TaskStatus = "todo" | "in_progress" | "done";
 
@@ -106,6 +111,8 @@ function ProjectDetail() {
   const [updateProjectData, setUpdateProjectData] =
     useState<UpdateProjectFormValues | null>(null);
 
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["tasks", projectId],
 
@@ -120,10 +127,15 @@ function ProjectDetail() {
     enabled: !!projectId,
   });
 
-  // const { data: project_members } = useQuery({
-  //   queryKey: ["project_members"],
-  //   queryFn: () => getProjectMembersApi(Number(projectId)),
-  // });
+  const { data: users = [] } = useQuery<User[]>({
+    queryKey: ["users"],
+    queryFn: getUsersApi,
+  });
+
+  const { data: project_members } = useQuery({
+    queryKey: ["project_members"],
+    queryFn: () => getProjectMembersApi(Number(projectId)),
+  });
 
   const filteredTasks = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
@@ -143,6 +155,10 @@ function ProjectDetail() {
       return matchesSearch && matchesStatus && matchesPriority;
     });
   }, [tasks, searchText, statusFilter, priorityFilter]);
+
+  const availableUsers = users.filter(
+    (u) => !project_members?.some((m) => m.user.id === u.id),
+  );
 
   const createTaskMutation = useMutation({
     mutationFn: createTaskApi,
@@ -242,6 +258,30 @@ function ProjectDetail() {
     },
   });
 
+  const addMemberMutation = useMutation({
+    mutationFn: ({
+      projectId,
+      userId,
+    }: {
+      projectId: number;
+      userId: number;
+    }) => addMemberApi(projectId, userId),
+
+    onSuccess: () => {
+      message.success("Add member successfully");
+
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
+      });
+
+      setAddMemberOpen(false);
+    },
+
+    onError: () => {
+      message.error("Add member failed");
+    },
+  });
+
   const handleCreateTask = (data: CreateTaskFormData) => {
     createTaskMutation.mutate({
       ...data,
@@ -276,6 +316,15 @@ function ProjectDetail() {
   const handleDeleteProject = () => {
     if (!projectId) return;
     deleteProjectMutation.mutate(Number(projectId));
+  };
+
+  const handleAddMember = (userId: number) => {
+    if (!projectId) return;
+
+    addMemberMutation.mutate({
+      projectId: Number(projectId),
+      userId,
+    });
   };
 
   const columns = useMemo(
@@ -328,7 +377,7 @@ function ProjectDetail() {
         cell: (info) => {
           const assigneeId = info.getValue();
 
-          const member = project?.members?.find(
+          const member = project_members?.find(
             (member) => member.user.id === assigneeId,
           );
 
@@ -554,9 +603,20 @@ function ProjectDetail() {
             ) : null}
           </Card>
 
-          <Card title="Danh sách member" className="shadow-sm">
+          <Card
+            className="shadow-sm"
+            title={
+              <div className="flex items-center justify-between">
+                <span>Danh sách member</span>
+
+                <Button type="primary" onClick={() => setAddMemberOpen(true)}>
+                  Add member
+                </Button>
+              </div>
+            }
+          >
             <div className="space-y-3">
-              {project?.members?.map((member) => (
+              {project_members?.map((member) => (
                 <div
                   key={member.id}
                   className="rounded-lg border border-slate-200 bg-white p-3"
@@ -587,7 +647,7 @@ function ProjectDetail() {
           mode="create"
           onCancel={() => setCreateTaskModalOpen(false)}
           onSubmit={handleCreateTask}
-          members={project?.members || []}
+          members={project_members || []}
         />
 
         <TaskModal
@@ -600,7 +660,7 @@ function ProjectDetail() {
             setSelectedTask(null);
           }}
           onSubmit={handleUpdateTask}
-          members={project?.members || []}
+          members={project_members || []}
         />
 
         <DeleteTaskModal
@@ -633,6 +693,13 @@ function ProjectDetail() {
           onConfirm={() => {
             handleDeleteProject;
           }}
+        />
+
+        <AddMemberModal
+          open={addMemberOpen}
+          onCancel={() => setAddMemberOpen(false)}
+          onSubmit={handleAddMember}
+          users={availableUsers}
         />
       </div>
     </main>

@@ -1,3 +1,5 @@
+import axiosInstance from "../api";
+
 export interface User {
   id: number;
   username: string;
@@ -8,3 +10,7 @@ export interface User {
   created_at: string;
   updated_at?: string | null;
 }
+
+export const getUsersApi = () => {
+  return axiosInstance.get<User[], User[]>(`/users`);
+};

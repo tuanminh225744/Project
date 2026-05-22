@@ -14,3 +14,10 @@ export const getProjectMembersApi = async (projectId: number) => {
     `/projects/${projectId}/members`,
   );
 };
+
+export const addMemberApi = (projectId: number, userId: number) => {
+  return axiosInstance.post(`/projects/${projectId}/members`, {
+    user_id: userId,
+    project_id: projectId,
+  });
+};
