@@ -123,6 +123,7 @@ class TaskService:
         task_data.created_by = creator_id
 
         task = self.task_repository.create_task(task_data)
+        self._invalidate_task_cache(task.id)
         return TaskResponse.model_validate(task)
 
     def update_task(self, task_id: int, task_update: TaskUpdateRequest, user_id: int) -> Optional[TaskResponse]:
@@ -137,7 +138,6 @@ class TaskService:
         # Check if user can modify the task
         if not self._can_modify_task(task, user_id):
             raise ValueError("Permission denied")
-
         updated = self.task_repository.update_task(task_id, task_update)
         if updated:
             self._invalidate_task_cache(task_id)
