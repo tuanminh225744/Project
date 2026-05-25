@@ -9,7 +9,7 @@ import { type UpdateProjectFormValues } from "../schemas/project_schema";
 interface UpdateProjectModalProps {
   open: boolean;
   mode: "edit";
-  initialValues?: Partial<UpdateProjectFormValues>;
+  initialValues?: Partial<UpdateProjectFormValues> | null;
   onCancel: () => void;
   onSubmit: (data: UpdateProjectFormValues) => void;
 }

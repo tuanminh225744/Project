@@ -123,7 +123,7 @@ function ProjectDetail() {
   });
 
   const { data: project } = useQuery({
-    queryKey: ["project"],
+    queryKey: ["project", projectId],
     queryFn: () => getProjectByIdApi(Number(projectId)),
     enabled: !!projectId,
   });
@@ -134,8 +134,9 @@ function ProjectDetail() {
   });
 
   const { data: project_members } = useQuery({
-    queryKey: ["project_members"],
+    queryKey: ["project_members", projectId],
     queryFn: () => getProjectMembersApi(Number(projectId)),
+    enabled: !!projectId,
   });
 
   const currentUser = useAuthStore((state) => state.user);
@@ -184,14 +185,12 @@ function ProjectDetail() {
   const createTaskMutation = useMutation({
     mutationFn: createTaskApi,
 
-    onSuccess: () => {
+    onSuccess: async () => {
       message.success("Create task successfully");
-
-      queryClient.invalidateQueries({
+      setCreateTaskModalOpen(false);
+      await queryClient.invalidateQueries({
         queryKey: ["tasks", projectId],
       });
-
-      setCreateTaskModalOpen(false);
     },
 
     onError: () => {
@@ -208,15 +207,13 @@ function ProjectDetail() {
       payload: UpdateTaskFormData;
     }) => updateTaskApi(taskId, payload),
 
-    onSuccess: () => {
+    onSuccess: async () => {
       message.success("Update task successfully");
-
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", projectId],
-      });
-
       setEditTaskModalOpen(false);
       setSelectedTask(null);
+      await queryClient.invalidateQueries({
+        queryKey: ["tasks", projectId],
+      });
     },
 
     onError: () => {
@@ -227,15 +224,13 @@ function ProjectDetail() {
   const deleteTaskMutation = useMutation({
     mutationFn: deleteTaskApi,
 
-    onSuccess: () => {
+    onSuccess: async () => {
       message.success("Delete task successfully");
-
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", projectId],
-      });
-
       setDeleteTaskModalOpen(false);
       setSelectedTask(null);
+      await queryClient.invalidateQueries({
+        queryKey: ["tasks", projectId],
+      });
     },
 
     onError: () => {
@@ -251,13 +246,12 @@ function ProjectDetail() {
       projectId: number;
       payload: CreateProjectFormValues;
     }) => updateProjectApi(projectId, payload),
-    onSuccess: () => {
+    onSuccess: async () => {
       message.success("Update Project successfully");
-
-      queryClient.invalidateQueries({
-        queryKey: ["Projects", projectId],
-      });
       setUpdateProjectModalOpen(false);
+      await queryClient.invalidateQueries({
+        queryKey: ["project", projectId],
+      });
     },
     onError: () => {
       message.error("Update Project failed");
@@ -268,11 +262,13 @@ function ProjectDetail() {
     mutationFn: deleteProjectApi,
     onSuccess: () => {
       message.success("Delete Project successfully");
-
-      queryClient.invalidateQueries({
-        queryKey: ["Projects", projectId],
-      });
       setDeleteProjectModalOpen(false);
+      navigate("/project");
+      queryClient.invalidateQueries({
+        queryKey: ["projects"],
+      });
+
+
     },
     onError: () => {
       message.error("Delete Project failed");
@@ -288,14 +284,12 @@ function ProjectDetail() {
       userId: number;
     }) => addMemberApi(projectId, userId),
 
-    onSuccess: () => {
+    onSuccess: async () => {
       message.success("Add member successfully");
-
-      queryClient.invalidateQueries({
-        queryKey: ["project"],
-      });
-
       setAddMemberOpen(false);
+      await queryClient.invalidateQueries({
+        queryKey: ["project_members", projectId],
+      });
     },
 
     onError: () => {
@@ -597,9 +591,9 @@ function ProjectDetail() {
                             {header.isPlaceholder
                               ? null
                               : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext(),
-                                )}
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
                           </th>
                         ))}
                       </tr>
@@ -726,7 +720,7 @@ function ProjectDetail() {
             setDeleteProjectModalOpen(false);
           }}
           onConfirm={() => {
-            handleDeleteProject;
+            handleDeleteProject();
           }}
         />
 
