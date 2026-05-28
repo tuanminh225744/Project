@@ -4,12 +4,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
 import { useEffect } from "react";
 
-import { taskSchema, type TaskFormData } from "../schemas/task_schema";
+import {
+  taskSchema,
+  type TaskFormData,
+  type TaskFormInput,
+} from "../schemas/task_schema";
+
+type TaskModalInitialValues = {
+  title?: string;
+  description?: string | null;
+  status?: TaskFormData["status"];
+  priority?: TaskFormData["priority"];
+  assignee_id?: number | null;
+  due_date?: string | null;
+};
 
 interface TaskModalProps {
   open: boolean;
   mode: "create" | "edit";
-  initialValues?: Partial<TaskFormData>;
+  initialValues?: TaskModalInitialValues;
   onCancel: () => void;
   onSubmit: (data: TaskFormData) => void;
   members?: any[];
@@ -28,7 +41,7 @@ function TaskModal({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TaskFormData>({
+  } = useForm<TaskFormInput, undefined, TaskFormData>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
       title: initialValues?.title || "",
@@ -36,7 +49,7 @@ function TaskModal({
       status: initialValues?.status || "todo",
       priority: initialValues?.priority || "medium",
       assignee_id: initialValues?.assignee_id,
-      due_date: initialValues?.due_date,
+      due_date: initialValues?.due_date ?? undefined,
     },
   });
 
@@ -47,7 +60,7 @@ function TaskModal({
       status: initialValues?.status || "todo",
       priority: initialValues?.priority || "medium",
       assignee_id: initialValues?.assignee_id,
-      due_date: initialValues?.due_date,
+      due_date: initialValues?.due_date ?? undefined,
     });
   }, [initialValues, reset]);
 

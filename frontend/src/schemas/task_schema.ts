@@ -13,4 +13,5 @@ export const taskSchema = z.object({
   due_date: z.string().optional(),
 });
 
-export type TaskFormData = z.input<typeof taskSchema>;
+export type TaskFormInput = z.input<typeof taskSchema>;
+export type TaskFormData = z.infer<typeof taskSchema>;
