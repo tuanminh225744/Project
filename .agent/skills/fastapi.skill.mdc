@@ -1,0 +1,77 @@
+---
+name: fastapi-skill
+category: backend
+priority: high
+--------------
+
+# FastAPI Backend Skill
+
+## Stack
+
+* FastAPI
+* Python 3.11
+* Pydantic
+* SQLAlchemy
+* PostgreSQL
+
+## Architecture
+
+Use layered architecture:
+
+* routers
+* services
+* repositories
+* schemas
+* models
+
+## Folder Structure
+
+```
+backend/
+ ├── app/
+ │    ├── routers/
+ │    ├── services/
+ │    ├── repositories/
+ │    ├── models/
+ │    ├── schemas/
+ │    └── core/
+```
+
+## API Rules
+
+* Use async endpoints
+* Use dependency injection
+* Validate all request bodies
+* Return proper HTTP status codes
+* Never put business logic inside routers
+
+## Coding Style
+
+* Use type hints everywhere
+* Use snake_case
+* Use small functions
+* Add docstrings for complex logic
+
+## Database Rules
+
+* Use SQLAlchemy ORM
+* Avoid raw SQL unless necessary
+* Use repository pattern
+
+## Response Format
+
+Standard API response:
+
+```
+{
+  "success": true,
+  "data": {},
+  "message": "Success"
+}
+```
+
+## Error Handling
+
+* Use HTTPException
+* Never expose internal stack traces
+* Return meaningful error messages

@@ -1,0 +1,67 @@
+---
+
+name: react-tsx-skill
+category: frontend
+priority: high
+--------------
+
+# React TSX Frontend Skill
+
+## Stack
+
+* React
+* Vite
+* TypeScript
+* TailwindCSS
+* Zustand
+* React Router
+
+## Component Rules
+
+* Use functional components
+* Use hooks
+* Use TypeScript interfaces
+* Keep components small
+
+## File Structure
+
+```
+frontend/
+ ├── src/
+ │    ├── pages/
+ │    ├── components/
+ │    ├── hooks/
+ │    ├── store/
+ │    ├── services/
+ │    └── layouts/
+```
+
+## TSX Rules
+
+* Never use any type
+* Prefer interfaces over types
+* Strongly type props
+* Use reusable components
+
+## UI Rules
+
+* Use TailwindCSS
+* Mobile-first design
+* Avoid inline styles
+
+## State Management
+
+* Use Zustand for global state
+* Keep local state minimal
+
+## API Integration
+
+* Use Axios
+* Separate API logic into services folder
+* Never call APIs directly inside UI components
+
+## Naming Conventions
+
+* PascalCase for components
+* camelCase for variables
+* kebab-case for folders

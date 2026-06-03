@@ -1,0 +1,141 @@
+---
+
+name: auth-skill
+category: security
+priority: critical
+------------------
+
+# Authentication Skill
+
+## Stack
+
+* JWT Authentication
+* Refresh Tokens
+* OAuth2PasswordBearer
+* FastAPI Security
+* bcrypt password hashing
+
+## Authentication Architecture
+
+Use layered auth structure:
+
+```
+auth/
+ ├── routers/
+ ├── services/
+ ├── repositories/
+ ├── schemas/
+ └── utils/
+```
+
+## Authentication Rules
+
+* Use JWT access tokens
+* Use refresh tokens
+* Hash passwords using bcrypt
+* Never store plain passwords
+* Never expose tokens in logs
+
+## Password Rules
+
+* Hash all passwords
+* Never return password hashes
+* Enforce minimum password length
+* Validate password strength
+
+## Token Rules
+
+* Access tokens should be short-lived
+* Refresh tokens should be revocable
+* Validate token expiration
+* Store secrets in environment variables
+
+## Authorization Rules
+
+* Protect private routes
+* Use role-based access control when needed
+* Validate user permissions before actions
+
+## FastAPI Rules
+
+* Use Depends for auth dependencies
+* Use OAuth2PasswordBearer
+* Create reusable auth dependencies
+
+## Frontend Rules
+
+* Store tokens securely
+* Never hardcode tokens
+* Handle token expiration
+* Redirect unauthorized users properly
+
+## Security Rules
+
+* Never expose secret keys
+* Never trust frontend authentication state
+* Validate user identity server-side
+* Rate limit login endpoints
+* Prevent brute force attacks
+
+## API Rules
+
+Authentication endpoints:
+
+```txt id="jlwm9t"
+POST /auth/login
+POST /auth/register
+POST /auth/refresh
+POST /auth/logout
+GET /auth/me
+```
+
+## Response Rules
+
+Successful login response:
+
+```
+{
+  "success": true,
+  "accessToken": "jwt-token",
+  "refreshToken": "refresh-token",
+  "user": {}
+}
+```
+
+## Error Handling
+
+* Return proper HTTP status codes
+* Never reveal whether email exists
+* Return generic auth failure messages
+
+## User Model Rules
+
+User model should include:
+
+* id
+* email
+* hashed_password
+* role
+* is_active
+* created_at
+
+## Recommended Flow
+
+```
+Frontend Login
+ -> Backend Validation
+ -> Password Verification
+ -> Generate JWT
+ -> Return Tokens
+```
+
+## Anti-Patterns
+
+Avoid:
+
+* Storing plain passwords
+* Long-lived access tokens
+* Hardcoded secrets
+* Returning sensitive user fields
+* Trusting frontend roles
+* Putting auth logic inside routers

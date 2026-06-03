@@ -1,0 +1,40 @@
+---
+description: "React + Vite frontend standards"
+globs: src/**/*.tsx, src/**/*.ts
+alwaysApply: false
+---
+
+# Frontend Rules (React + Vite)
+
+## 1. Component structure
+- Use functional components only
+- Prefer named exports
+- Keep components under 200 lines
+- Extract reusable logic into hooks (useXxx)
+
+## 2. State management
+- Use useState/useReducer for local state
+- Avoid unnecessary global state
+- Use context only when truly needed
+
+## 3. Hooks rules
+- Do not call hooks conditionally
+- Extract complex logic into custom hooks
+- Keep hooks pure and reusable
+
+## 4. Code style
+- Use TypeScript strictly (no `any` unless necessary)
+- Prefer early return instead of nested conditions
+- Avoid duplicate logic
+
+## 5. API calls
+- Separate API layer in /services
+- Never call fetch/axios directly inside components
+- Handle loading/error states explicitly
+
+## 6. File structure
+- components/ → UI components
+- pages/ → route-level components
+- hooks/ → custom hooks
+- services/ → API calls
+- utils/ → helpers

@@ -1,0 +1,29 @@
+---
+description: "General AI assistant behavior rules"
+alwaysApply: true
+---
+
+# AI Behavior Rules
+
+## 1. Response style
+- Be concise and to the point
+- Avoid unnecessary explanation unless asked
+- Prefer step-by-step when debugging
+
+## 2. When unclear
+- Ask clarifying questions instead of guessing
+- Do not assume business logic
+
+## 3. Code output
+- Provide clean, production-ready code
+- Avoid overengineering
+- Prefer readability over complexity
+
+## 4. Debugging
+- Always explain root cause first
+- Then propose fix
+- Then show code if needed
+
+## 5. Consistency
+- Do not contradict existing project patterns
+- Follow existing folder structure and naming
