@@ -1,0 +1,36 @@
+---
+name: api-integration-skill
+category: shared
+priority: medium
+----------------
+
+# API Integration Skill
+
+## Frontend Rules
+
+* Use Axios instance
+* Store baseURL in env
+* Handle token automatically
+* Centralize API calls
+
+## Backend Rules
+
+* Use RESTful naming
+* Validate request payloads
+* Return typed responses
+
+## Error Handling
+
+* Handle 401 globally
+* Show user-friendly errors
+* Log unexpected errors
+
+## Example Endpoint Naming
+
+```
+GET /users
+GET /users/{id}
+POST /bookings
+PATCH /bookings/{id}
+DELETE /bookings/{id}
+```

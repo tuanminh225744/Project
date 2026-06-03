@@ -1,0 +1,33 @@
+---
+description: "API contract between React frontend and FastAPI backend"
+alwaysApply: true
+---
+
+# API Contract Rules
+
+## 1. Communication
+- All API calls go through /services layer in frontend
+- Backend must always return JSON
+
+## 2. Response format
+Always follow:
+{
+  "success": boolean,
+  "data": any,
+  "message": string
+}
+
+## 3. Error format
+{
+  "success": false,
+  "message": string,
+  "error_code": string
+}
+
+## 4. Naming conventions
+- Use snake_case in backend
+- Use camelCase in frontend
+- Convert at API boundary only
+
+## 5. Versioning
+- API endpoints must be versioned: /api/v1/...

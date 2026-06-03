@@ -1,0 +1,115 @@
+---
+
+name: database-skill
+category: backend
+priority: high
+--------------
+
+# Database Skill
+
+## Stack
+
+* PostgreSQL
+* SQLAlchemy ORM
+* Alembic
+* Async database access
+
+## Database Architecture
+
+Use layered database architecture:
+
+```txt id="0txgmq"
+models/
+repositories/
+services/
+schemas/
+```
+
+## ORM Rules
+
+* Use SQLAlchemy ORM
+* Avoid raw SQL unless absolutely necessary
+* Use typed ORM models
+* Use relationships properly
+* Avoid duplicated queries
+
+## Repository Pattern
+
+* All database access must go through repositories
+* Routers must never query database directly
+* Services should use repositories
+
+## Query Rules
+
+* Use pagination for large datasets
+* Avoid N+1 queries
+* Use joins carefully
+* Select only required fields
+
+## Transaction Rules
+
+* Use transactions for critical operations
+* Rollback on failure
+* Keep transactions small
+
+## Model Rules
+
+* Use UUID or integer primary keys consistently
+* Add created_at and updated_at timestamps
+* Use soft delete when appropriate
+
+## Migration Rules
+
+* Use Alembic for migrations
+* Never modify production tables manually
+* Keep migrations atomic
+
+## Performance Rules
+
+* Add indexes for frequently queried columns
+* Avoid loading unnecessary relationships
+* Use lazy loading carefully
+
+## Validation Rules
+
+* Validate input before database operations
+* Never trust frontend data
+* Handle database exceptions gracefully
+
+## Security Rules
+
+* Never expose sensitive fields
+* Never return password hashes
+* Use parameterized queries
+* Never concatenate SQL strings manually
+
+## Example Folder Structure
+
+```
+backend/
+ ├── app/
+ │    ├── models/
+ │    ├── repositories/
+ │    ├── services/
+ │    ├── schemas/
+ │    └── db/
+```
+
+## Example Flow
+
+```
+Router
+ -> Service
+   -> Repository
+      -> Database
+```
+
+## Anti-Patterns
+
+Avoid:
+
+* Business logic inside repositories
+* Database queries inside routers
+* Massive ORM models
+* Returning ORM models directly to frontend
+* Repeating query logic across services

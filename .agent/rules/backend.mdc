@@ -1,0 +1,44 @@
+---
+description: "FastAPI backend architecture and standards"
+globs: backend/**/*.py
+alwaysApply: false
+---
+
+# Backend Rules (FastAPI)
+
+## 1. Project structure
+- routes/ → API endpoints
+- services/ → business logic
+- models/ → database models
+- schemas/ → Pydantic DTOs
+- core/ → config, settings
+
+## 2. API design
+- Always use Pydantic schemas for request/response
+- Never return raw database models directly
+- Use consistent response format:
+  {
+    "success": true,
+    "data": ...,
+    "message": ""
+  }
+
+## 3. Business logic
+- Keep logic out of routes
+- Put all logic in service layer
+- Routes should only handle request/response
+
+## 4. Error handling
+- Use HTTPException for API errors
+- Never return raw exceptions
+- Standardize error messages
+
+## 5. Database
+- Use dependency injection for DB session
+- Always close sessions properly
+- Avoid raw SQL unless necessary
+
+## 6. Code style
+- Follow PEP8
+- Use type hints everywhere
+- Keep functions small and focused
